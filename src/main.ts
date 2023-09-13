@@ -1,7 +1,11 @@
 import { NestFactory } from '@nestjs/core';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import * as express from 'express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+
+const server = express();
 
 export const configureApp = (app: INestApplication<unknown>) => {
   app.enableCors({
@@ -11,7 +15,7 @@ export const configureApp = (app: INestApplication<unknown>) => {
 };
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
   configureApp(app);
   const config = new DocumentBuilder()
     .setTitle('BrAIn API')
@@ -23,6 +27,7 @@ async function bootstrap() {
     jsonDocumentUrl: 'openapi.json',
   });
 
-  await app.listen(3002);
+  await app.listen(process.env.PORT || 3002);
 }
+
 bootstrap();
