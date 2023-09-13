@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import * as express from 'express';
 import { AppModule } from './app.module';
+import { configureApp } from './main';
 
 const server = express();
 
@@ -10,6 +11,7 @@ const createNestServer = async (expressInstance) => {
     AppModule,
     new ExpressAdapter(expressInstance),
   );
+  configureApp(app);
 
   return app.init();
 };
