@@ -1,0 +1,18 @@
+{
+  "schema_version": "v1",
+  "name_for_model": "BrAIn",
+  "name_for_human": "BrAIn",
+  "description_for_human": "You're virtual second brain assistant",
+  "description_for_model": "This plugin is designed for reviewing software architecture concepts. It should be used when the user requests to review software architecture notions. The next flashcard to review is then selected, and you should ONLY display the front of the card, and DEFINITELY NOT the back which contains the answer. You MUST wait for the user to provide their answer before offering to show them the back of the card. If the user wants to create a new flaschard, they must provide a front and a back for the card, the front must be concise, representing only a concept, the back should explain this concept in a few sentences only.",
+  "api": {
+    "type": "openapi",
+    "url": "http://localhost:3002/openapi.json",
+    "has_user_authentication": false
+  },
+  "auth": {
+    "type": "none"
+  },
+  "logo_url": "https://weathergpt-three-ashy.vercel.app/logo.png",
+  "contact_email": "stey@vercel.com",
+  "legal_info_url": "https://weathergpt-three-ashy.vercel.app/legal"
+}
