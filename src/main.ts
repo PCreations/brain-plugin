@@ -1,11 +1,11 @@
 import { NestFactory } from '@nestjs/core';
-import { ExpressAdapter } from '@nestjs/platform-express';
-import * as express from 'express';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
-
-const server = express();
 
 export const configureApp = (app: INestApplication<unknown>) => {
   app.enableCors({
@@ -15,7 +15,10 @@ export const configureApp = (app: INestApplication<unknown>) => {
 };
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
+  const app = await NestFactory.create<NestFastifyApplication>(
+    AppModule,
+    new FastifyAdapter(),
+  );
   configureApp(app);
   const config = new DocumentBuilder()
     .setTitle('BrAIn API')
