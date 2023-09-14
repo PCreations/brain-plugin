@@ -8,7 +8,7 @@ datasource db {
 }
 
 model flashcards {
-  id    String @id @db.Uuid
+  id    String @id
   front String
   back  String
 }

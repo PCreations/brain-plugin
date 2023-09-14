@@ -1,12 +1,14 @@
-import { PrismaClient } from '.prisma/client';
+import { Injectable } from '@nestjs/common';
 import { Flashcard } from '../model/flashcard.entity';
 import { FlashcardRepository } from '../model/flashcard.repository';
+import { PrismaService } from './prisma.service';
 
+@Injectable()
 export class PostgresFlashcardRepository implements FlashcardRepository {
-  constructor(private readonly prismaClient: PrismaClient) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async getById(flashcardId: string): Promise<Flashcard> {
-    const flashcard = await this.prismaClient.flashcards.findUnique({
+    const flashcard = await this.prisma.flashcards.findUnique({
       where: { id: flashcardId },
     });
 
@@ -18,7 +20,7 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
       front: flashcard.front,
       back: flashcard.back,
     };
-    await this.prismaClient.flashcards.upsert({
+    await this.prisma.flashcards.upsert({
       where: { id: flashcard.id },
       update: data,
       create: {

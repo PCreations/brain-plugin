@@ -7,15 +7,12 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 
-process.on('SIGTERM', (signal) => {
-  console.log('SIGTERM SIGNAL', signal);
-});
-
 export const configureApp = (app: INestApplication<unknown>) => {
   app.enableCors({
     origin: '*',
   });
   app.useGlobalPipes(new ValidationPipe());
+  app.enableShutdownHooks();
 };
 
 async function bootstrap() {

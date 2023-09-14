@@ -1,18 +1,18 @@
 import { PrismaClient } from '@prisma/client';
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { v4 as uuidv4 } from 'uuid';
 import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
 import { PostgresFlashcardRepository } from '../postgres-flashcard.repository';
+import { PrismaService } from '../prisma.service';
 
 const asyncExec = promisify(exec);
 
 describe('PostgresFlashcardRepository', () => {
   let container: StartedPostgreSqlContainer;
-  let prismaClient: PrismaClient;
+  let prismaClient: PrismaService;
   beforeAll(async () => {
     container = await new PostgreSqlContainer()
       .withDatabase('brain-test')
@@ -29,7 +29,7 @@ describe('PostgresFlashcardRepository', () => {
           url: databaseUrl,
         },
       },
-    });
+    }) as PrismaService;
     await asyncExec(`DATABASE_URL=${databaseUrl} npx prisma migrate deploy`);
 
     await prismaClient.$connect();
@@ -46,7 +46,7 @@ describe('PostgresFlashcardRepository', () => {
 
   test('save() should save a new flashcard', async () => {
     const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
-    const flashcardId = uuidv4();
+    const flashcardId = 'flashcard-id';
 
     await flashcardRepository.save({
       id: flashcardId,
@@ -66,7 +66,7 @@ describe('PostgresFlashcardRepository', () => {
 
   test('save() should update an existing flashcard', async () => {
     const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
-    const flashcardId = uuidv4();
+    const flashcardId = 'flashcard-id';
     await flashcardRepository.save({
       id: flashcardId,
       front: 'some concept',
@@ -91,7 +91,7 @@ describe('PostgresFlashcardRepository', () => {
 
   test('getById() should return a flashcard by its id', async () => {
     const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
-    const flashcardId = uuidv4();
+    const flashcardId = 'flashcard-id';
     await flashcardRepository.save({
       id: flashcardId,
       front: 'some concept',
