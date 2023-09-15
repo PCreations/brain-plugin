@@ -8,19 +8,25 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
   constructor(private readonly prisma: PrismaService) {}
 
   async getById(flashcardId: string): Promise<Flashcard> {
-    const flashcard = await this.prisma.flashcards.findUnique({
+    const flashcard = await this.prisma.flashcard.findUnique({
       where: { id: flashcardId },
     });
 
-    return flashcard;
+    return new Flashcard(
+      flashcard.id,
+      flashcard.front,
+      flashcard.back,
+      flashcard.partitionId,
+    );
   }
 
   async save(flashcard: Flashcard): Promise<void> {
-    const data: { front: string; back: string } = {
+    const data: { front: string; back: string; partitionId: string } = {
       front: flashcard.front,
       back: flashcard.back,
+      partitionId: flashcard.partitionId,
     };
-    await this.prisma.flashcards.upsert({
+    await this.prisma.flashcard.upsert({
       where: { id: flashcard.id },
       update: data,
       create: {

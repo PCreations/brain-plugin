@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Flashcard } from 'src/flashcard/model/flashcard.entity';
+import { BoxRepository } from 'src/flashcard/model/box.repository';
 import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 
 export class CreateFlashcardCommand {
@@ -10,15 +10,18 @@ export class CreateFlashcardCommand {
 
 @Injectable()
 export class CreateFlashcard {
-  constructor(private readonly flashcardRepository: FlashcardRepository) {}
+  constructor(
+    private readonly flashcardRepository: FlashcardRepository,
+    private readonly boxRepository: BoxRepository,
+  ) {}
 
   public async execute(createFlashcardCommand: CreateFlashcardCommand) {
-    this.flashcardRepository.save(
-      new Flashcard(
-        createFlashcardCommand.id,
-        createFlashcardCommand.front,
-        createFlashcardCommand.back,
-      ),
-    );
+    const box = await this.boxRepository.getById('ze-box');
+    const flashcard = box.addNewFlashcard({
+      id: createFlashcardCommand.id,
+      front: createFlashcardCommand.front,
+      back: createFlashcardCommand.back,
+    });
+    await this.flashcardRepository.save(flashcard);
   }
 }

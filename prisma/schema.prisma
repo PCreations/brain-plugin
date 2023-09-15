@@ -7,8 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model flashcards {
-  id    String @id
-  front String
-  back  String
+model Flashcard {
+  id          String    @id
+  front       String
+  back        String
+  Partition   Partition @relation(fields: [partitionId], references: [id])
+  partitionId String
+}
+
+model Partition {
+  id         String      @id
+  flashcards Flashcard[]
+  box        Box         @relation(fields: [boxId], references: [id])
+  boxId      String
+}
+
+model Box {
+  id        String      @id
+  Partition Partition[]
 }

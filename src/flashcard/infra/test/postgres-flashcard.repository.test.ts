@@ -7,6 +7,7 @@ import {
 } from '@testcontainers/postgresql';
 import { PostgresFlashcardRepository } from '../postgres-flashcard.repository';
 import { PrismaService } from '../prisma.service';
+import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 
 const asyncExec = promisify(exec);
 
@@ -41,62 +42,76 @@ describe('PostgresFlashcardRepository', () => {
   });
 
   beforeEach(async () => {
-    await prismaClient.flashcards.deleteMany();
+    await prismaClient.flashcard.deleteMany();
   });
 
   test('save() should save a new flashcard', async () => {
     const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
     const flashcardId = 'flashcard-id';
 
-    await flashcardRepository.save({
-      id: flashcardId,
-      front: 'some concept',
-      back: 'definition of the concept',
-    });
+    await flashcardRepository.save(
+      new Flashcard(
+        flashcardId,
+        'some concept',
+        'definition of the concept',
+        'partition-id',
+      ),
+    );
 
-    const expectedFlashcard = await prismaClient.flashcards.findUnique({
+    const expectedFlashcard = await prismaClient.flashcard.findUnique({
       where: { id: flashcardId },
     });
     expect(expectedFlashcard).toEqual({
       id: flashcardId,
       front: 'some concept',
       back: 'definition of the concept',
+      partitionId: 'partition-id',
     });
   });
 
   test('save() should update an existing flashcard', async () => {
     const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
     const flashcardId = 'flashcard-id';
-    await flashcardRepository.save({
-      id: flashcardId,
-      front: 'some concept',
-      back: 'definition of the concept',
-    });
+    await flashcardRepository.save(
+      new Flashcard(
+        flashcardId,
+        'some concept',
+        'definition of the concept',
+        'partition-id',
+      ),
+    );
 
-    await flashcardRepository.save({
-      id: flashcardId,
-      front: 'some other concept',
-      back: 'definition of the other concept',
-    });
+    await flashcardRepository.save(
+      new Flashcard(
+        flashcardId,
+        'some other concept',
+        'definition of the other concept',
+        'partition2-id',
+      ),
+    );
 
-    const expectedFlashcard = await prismaClient.flashcards.findUnique({
+    const expectedFlashcard = await prismaClient.flashcard.findUnique({
       where: { id: flashcardId },
     });
     expect(expectedFlashcard).toEqual({
       id: flashcardId,
       front: 'some other concept',
       back: 'definition of the other concept',
+      partitionId: 'partition2-id',
     });
   });
 
   test('getById() should return a flashcard by its id', async () => {
     const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
     const flashcardId = 'flashcard-id';
-    await flashcardRepository.save({
-      id: flashcardId,
-      front: 'some concept',
-      back: 'definition of the concept',
-    });
+    await flashcardRepository.save(
+      new Flashcard(
+        flashcardId,
+        'some concept',
+        'definition of the concept',
+        'partition-id',
+      ),
+    );
 
     const expectedFlashcard = await flashcardRepository.getById(flashcardId);
 
@@ -104,6 +119,7 @@ describe('PostgresFlashcardRepository', () => {
       id: flashcardId,
       front: 'some concept',
       back: 'definition of the concept',
+      partitionId: 'partition-id',
     });
   });
 });

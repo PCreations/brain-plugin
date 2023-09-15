@@ -6,13 +6,17 @@ import {
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
+import { BoxRepository } from './flashcard/model/box.repository';
+import { Box } from './flashcard/model/box.entity';
 
-export const configureApp = (app: INestApplication<unknown>) => {
+export const configureApp = async (app: INestApplication<unknown>) => {
   app.enableCors({
     origin: '*',
   });
   app.useGlobalPipes(new ValidationPipe());
   app.enableShutdownHooks();
+  const boxRepository = app.get<BoxRepository>(BoxRepository);
+  await boxRepository.save(Box.emptyBoxOfId('ze-box'));
 };
 
 async function bootstrap() {
@@ -20,7 +24,7 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
-  configureApp(app);
+  await configureApp(app);
   const config = new DocumentBuilder()
     .setTitle('BrAIn API')
     .setDescription('Create flashcards and review them with spaced-repition.')
