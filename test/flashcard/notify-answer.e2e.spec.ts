@@ -78,4 +78,29 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
       expect(editedFlashcard.partitionId).toEqual(zeBox.partitions[1].id);
     });
   });
+
+  describe('Example: The flashcard is in the second partition', () => {
+    test('/api/flashcard/notify-answer (PUT) - the wrong answer is given thus the flashcard should be in the first partition', async () => {
+      const zeBox = await boxRepository.getById('ze-box');
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard-id',
+          'some concept',
+          'some concept definition',
+          zeBox.partitions[1].id,
+        ),
+      );
+
+      await request(app.getHttpServer())
+        .put('/api/flashcard/notify-answer')
+        .send({
+          flashcardId: 'flashcard-id',
+          isCorrect: false,
+        })
+        .expect(200);
+
+      const editedFlashcard = await flashcardRepository.getById('flashcard-id');
+      expect(editedFlashcard.partitionId).toEqual(zeBox.partitions[0].id);
+    });
+  });
 });

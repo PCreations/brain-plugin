@@ -20,13 +20,17 @@ export class PostgresBoxRepository implements BoxRepository {
       },
     });
 
-    return new Box(boxData.id, [
-      new Partition(boxData.Partition[0].id),
-      new Partition(boxData.Partition[1].id),
-      new Partition(boxData.Partition[2].id),
-      new Partition(boxData.Partition[3].id),
-      new Partition(boxData.Partition[4].id),
-    ]);
+    return new Box(
+      boxData.id,
+      [
+        new Partition(boxData.Partition[0].id),
+        new Partition(boxData.Partition[1].id),
+        new Partition(boxData.Partition[2].id),
+        new Partition(boxData.Partition[3].id),
+        new Partition(boxData.Partition[4].id),
+      ],
+      new Partition(boxData.Partition[5].id),
+    );
   }
 
   async save(box: Box): Promise<void> {
@@ -59,6 +63,10 @@ export class PostgresBoxRepository implements BoxRepository {
         {
           boxId: box.id,
           id: box.partitions[4].id,
+        },
+        {
+          boxId: box.id,
+          id: box.archivedPartition.id,
         },
       ],
     });

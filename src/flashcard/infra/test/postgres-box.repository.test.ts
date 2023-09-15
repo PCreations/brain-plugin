@@ -70,6 +70,7 @@ describe('PostgresBoxRepository', () => {
         { id: box.partitions[2].id },
         { id: box.partitions[3].id },
         { id: box.partitions[4].id },
+        { id: box.archivedPartition.id },
       ],
     });
   });
@@ -100,6 +101,7 @@ describe('PostgresBoxRepository', () => {
         { id: box.partitions[2].id },
         { id: box.partitions[3].id },
         { id: box.partitions[4].id },
+        { id: box.archivedPartition.id },
       ],
     });
   });

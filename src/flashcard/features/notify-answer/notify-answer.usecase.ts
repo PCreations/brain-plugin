@@ -20,7 +20,9 @@ export class NotifyAnswer {
       notifyAnswerCommand.flashcardId,
     );
 
-    const flashcardInNewPartition = box.putFlashcardInNextPartition(flashcard);
+    const flashcardInNewPartition = box.handleFlashcardAnswer(flashcard, {
+      isCorrect: notifyAnswerCommand.isCorrect,
+    });
 
     return this.flashcardRepository.save(flashcardInNewPartition);
   }

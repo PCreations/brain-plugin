@@ -42,4 +42,42 @@ describe('Feature: notifying an answer to a flashcard', () => {
     const flashcard = await flashcardRepository.getById('flashcard-id');
     expect(flashcard.partitionId).toEqual(box.partitions[2].id);
   });
+
+  test('Example: A flashcard is in the second partition and we notify a wrong answer, then the flashcard should move back to the first partition', async () => {
+    const box = Box.emptyBoxOfId('ze-box');
+    const boxRepository = new InMemoryBoxRepository();
+    const flashcardRepository = new InMemoryFlashcardRepository();
+    await boxRepository.save(box);
+    await flashcardRepository.save(
+      new Flashcard('flashcard-id', 'front', 'back', box.partitions[1].id),
+    );
+    const notifyAnswer = new NotifyAnswer(flashcardRepository, boxRepository);
+
+    await notifyAnswer.execute({
+      flashcardId: 'flashcard-id',
+      isCorrect: false,
+    });
+
+    const flashcard = await flashcardRepository.getById('flashcard-id');
+    expect(flashcard.partitionId).toEqual(box.partitions[0].id);
+  });
+
+  test('Example: A flashcard is in the fifth partition and we notify a correct answer, then the flashcard should be archived', async () => {
+    const box = Box.emptyBoxOfId('ze-box');
+    const boxRepository = new InMemoryBoxRepository();
+    const flashcardRepository = new InMemoryFlashcardRepository();
+    await boxRepository.save(box);
+    await flashcardRepository.save(
+      new Flashcard('flashcard-id', 'front', 'back', box.partitions[4].id),
+    );
+    const notifyAnswer = new NotifyAnswer(flashcardRepository, boxRepository);
+
+    await notifyAnswer.execute({
+      flashcardId: 'flashcard-id',
+      isCorrect: true,
+    });
+
+    const flashcard = await flashcardRepository.getById('flashcard-id');
+    expect(flashcard.partitionId).toEqual(box.archivedPartition.id);
+  });
 });
