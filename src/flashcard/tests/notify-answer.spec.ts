@@ -1,83 +1,96 @@
-import { NotifyAnswer } from '../features/notify-answer/notify-answer.usecase';
 import { InMemoryBoxRepository } from '../infra/inmemory-box.repository';
-import { InMemoryFlashcardRepository } from '../infra/inmemory-flashcard.repository';
 import { Box } from '../model/box.entity';
-import { Flashcard } from '../model/flashcard.entity';
+import { flashcardBuilder } from './builders/flashcard.builder';
+import {
+  FlashcardFixture,
+  createFlashcardFixture,
+} from './fixtures/flashcard.fixture';
 
 describe('Feature: notifying an answer to a flashcard', () => {
-  test('Example: A flashcard is in the first partition and we notify a correct answer, then the flashcard should move to the second partition', async () => {
-    const box = Box.emptyBoxOfId('ze-box');
-    const boxRepository = new InMemoryBoxRepository();
-    const flashcardRepository = new InMemoryFlashcardRepository();
-    await boxRepository.save(box);
-    await flashcardRepository.save(
-      new Flashcard('flashcard-id', 'front', 'back', box.partitions[0].id),
-    );
-    const notifyAnswer = new NotifyAnswer(flashcardRepository, boxRepository);
+  let fixture: FlashcardFixture;
+  const box = Box.emptyBoxOfId('ze-box');
+  const boxRepository = new InMemoryBoxRepository();
 
-    await notifyAnswer.execute({
+  beforeAll(async () => {
+    await boxRepository.save(Box.emptyBoxOfId('ze-box'));
+  });
+
+  beforeEach(() => {
+    fixture = createFlashcardFixture({
+      boxRepository,
+    });
+  });
+
+  test('Example: A flashcard is in the first partition and we notify a correct answer, then the flashcard should move to the second partition', async () => {
+    await fixture.givenExistingFlashcard(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .inPartition(box.partitions[0].id)
+        .build(),
+    );
+
+    await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: true,
     });
 
-    const flashcard = await flashcardRepository.getById('flashcard-id');
-    expect(flashcard.partitionId).toEqual(box.partitions[1].id);
+    await fixture.thenFlashcardShouldBeInPartition({
+      flashcardId: 'flashcard-id',
+      partitionNumber: 2,
+    });
   });
 
   test('Example: A flashcard is in the second partition and we notify a correct answer, then the flashcard should move to the third partition', async () => {
-    const box = Box.emptyBoxOfId('ze-box');
-    const boxRepository = new InMemoryBoxRepository();
-    const flashcardRepository = new InMemoryFlashcardRepository();
-    await boxRepository.save(box);
-    await flashcardRepository.save(
-      new Flashcard('flashcard-id', 'front', 'back', box.partitions[1].id),
+    await fixture.givenExistingFlashcard(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .inPartition(box.partitions[1].id)
+        .build(),
     );
-    const notifyAnswer = new NotifyAnswer(flashcardRepository, boxRepository);
 
-    await notifyAnswer.execute({
+    await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: true,
     });
 
-    const flashcard = await flashcardRepository.getById('flashcard-id');
-    expect(flashcard.partitionId).toEqual(box.partitions[2].id);
+    await fixture.thenFlashcardShouldBeInPartition({
+      flashcardId: 'flashcard-id',
+      partitionNumber: 3,
+    });
   });
 
   test('Example: A flashcard is in the second partition and we notify a wrong answer, then the flashcard should move back to the first partition', async () => {
-    const box = Box.emptyBoxOfId('ze-box');
-    const boxRepository = new InMemoryBoxRepository();
-    const flashcardRepository = new InMemoryFlashcardRepository();
-    await boxRepository.save(box);
-    await flashcardRepository.save(
-      new Flashcard('flashcard-id', 'front', 'back', box.partitions[1].id),
+    await fixture.givenExistingFlashcard(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .inPartition(box.partitions[1].id)
+        .build(),
     );
-    const notifyAnswer = new NotifyAnswer(flashcardRepository, boxRepository);
 
-    await notifyAnswer.execute({
+    await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: false,
     });
 
-    const flashcard = await flashcardRepository.getById('flashcard-id');
-    expect(flashcard.partitionId).toEqual(box.partitions[0].id);
+    await fixture.thenFlashcardShouldBeInPartition({
+      flashcardId: 'flashcard-id',
+      partitionNumber: 1,
+    });
   });
 
   test('Example: A flashcard is in the fifth partition and we notify a correct answer, then the flashcard should be archived', async () => {
-    const box = Box.emptyBoxOfId('ze-box');
-    const boxRepository = new InMemoryBoxRepository();
-    const flashcardRepository = new InMemoryFlashcardRepository();
-    await boxRepository.save(box);
-    await flashcardRepository.save(
-      new Flashcard('flashcard-id', 'front', 'back', box.partitions[4].id),
+    await fixture.givenExistingFlashcard(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .inPartition(box.partitions[4].id)
+        .build(),
     );
-    const notifyAnswer = new NotifyAnswer(flashcardRepository, boxRepository);
 
-    await notifyAnswer.execute({
+    await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: true,
     });
 
-    const flashcard = await flashcardRepository.getById('flashcard-id');
-    expect(flashcard.partitionId).toEqual(box.archivedPartition.id);
+    await fixture.thenFlashcardShouldBeArchived('flashcard-id');
   });
 });

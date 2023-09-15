@@ -4,11 +4,11 @@ import { AppModule } from 'src/app.module';
 import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 import { configureApp } from 'src/configure-app';
 import * as request from 'supertest';
-import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 import { BoxRepository } from 'src/flashcard/model/box.repository';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
 import { PrismaTestingHelper } from '@chax-at/transactional-prisma-testing';
 import { ConfigModule } from '@nestjs/config';
+import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
 
 describe('Feature: Notifying a good answer to a flashcard', () => {
   let app: INestApplication;
@@ -58,12 +58,10 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
     test('/api/flashcard/notify-answer (PUT) - the correct answer is given thus the flashcard should be in the second partition', async () => {
       const zeBox = await boxRepository.getById('ze-box');
       await flashcardRepository.save(
-        new Flashcard(
-          'flashcard-id',
-          'some concept',
-          'some concept definition',
-          zeBox.partitions[0].id,
-        ),
+        flashcardBuilder()
+          .ofId('flashcard-id')
+          .inPartition(zeBox.partitions[0].id)
+          .build(),
       );
 
       await request(app.getHttpServer())
@@ -83,12 +81,10 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
     test('/api/flashcard/notify-answer (PUT) - the wrong answer is given thus the flashcard should be in the first partition', async () => {
       const zeBox = await boxRepository.getById('ze-box');
       await flashcardRepository.save(
-        new Flashcard(
-          'flashcard-id',
-          'some concept',
-          'some concept definition',
-          zeBox.partitions[1].id,
-        ),
+        flashcardBuilder()
+          .ofId('flashcard-id')
+          .inPartition(zeBox.partitions[1].id)
+          .build(),
       );
 
       await request(app.getHttpServer())
