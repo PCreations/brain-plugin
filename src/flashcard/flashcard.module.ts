@@ -7,12 +7,14 @@ import { NotifyAnswerController } from './features/notify-answer/notify-answer.c
 import { BoxRepository } from './model/box.repository';
 import { PostgresFlashcardRepository } from './infra/postgres-flashcard.repository';
 import { PostgresBoxRepository } from './infra/postgres-box.repository';
+import { NotifyAnswer } from './features/notify-answer/notify-answer.usecase';
 
 @Module({
   imports: [],
   controllers: [CreateFlashcardController, NotifyAnswerController],
   providers: [
     CreateFlashcard,
+    NotifyAnswer,
     PrismaService,
     {
       provide: FlashcardRepository,

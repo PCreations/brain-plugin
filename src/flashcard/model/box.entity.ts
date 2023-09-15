@@ -34,4 +34,13 @@ export class Box {
       this.partitions[0].id,
     );
   }
+
+  putFlashcardInNextPartition(flashcard: Flashcard) {
+    const actualPartitionNumber = this.partitions.findIndex(
+      (partition) => partition.id === flashcard.partitionId,
+    );
+    return flashcard.putInPartition(
+      this.partitions[actualPartitionNumber + 1].id,
+    );
+  }
 }
