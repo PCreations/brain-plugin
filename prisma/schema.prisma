@@ -18,7 +18,7 @@ model Flashcard {
 model Partition {
   id         String      @id
   flashcards Flashcard[]
-  box        Box         @relation(fields: [boxId], references: [id])
+  box        Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
   boxId      String
 }
 

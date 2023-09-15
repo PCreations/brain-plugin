@@ -5,9 +5,9 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
-import { PostgresFlashcardRepository } from '../postgres-flashcard.repository';
 import { PrismaService } from '../prisma.service';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
+import { PostgresFlashcardRepository } from '../postgres-flashcard.repository';
 
 const asyncExec = promisify(exec);
 
@@ -43,6 +43,26 @@ describe('PostgresFlashcardRepository', () => {
 
   beforeEach(async () => {
     await prismaClient.flashcard.deleteMany();
+    await prismaClient.box.upsert({
+      where: { id: 'box-id' },
+      update: { id: 'box-id' },
+      create: {
+        id: 'box-id',
+      },
+    });
+    await prismaClient.partition.createMany({
+      skipDuplicates: true,
+      data: [
+        {
+          boxId: 'box-id',
+          id: 'box-partition-id',
+        },
+        {
+          boxId: 'box-id',
+          id: 'box-partition2-id',
+        },
+      ],
+    });
   });
 
   test('save() should save a new flashcard', async () => {
@@ -54,7 +74,7 @@ describe('PostgresFlashcardRepository', () => {
         flashcardId,
         'some concept',
         'definition of the concept',
-        'partition-id',
+        'box-partition-id',
       ),
     );
 
@@ -65,7 +85,7 @@ describe('PostgresFlashcardRepository', () => {
       id: flashcardId,
       front: 'some concept',
       back: 'definition of the concept',
-      partitionId: 'partition-id',
+      partitionId: 'box-partition-id',
     });
   });
 
@@ -77,7 +97,7 @@ describe('PostgresFlashcardRepository', () => {
         flashcardId,
         'some concept',
         'definition of the concept',
-        'partition-id',
+        'box-partition-id',
       ),
     );
 
@@ -86,7 +106,7 @@ describe('PostgresFlashcardRepository', () => {
         flashcardId,
         'some other concept',
         'definition of the other concept',
-        'partition2-id',
+        'box-partition2-id',
       ),
     );
 
@@ -97,7 +117,7 @@ describe('PostgresFlashcardRepository', () => {
       id: flashcardId,
       front: 'some other concept',
       back: 'definition of the other concept',
-      partitionId: 'partition2-id',
+      partitionId: 'box-partition2-id',
     });
   });
 
@@ -109,7 +129,7 @@ describe('PostgresFlashcardRepository', () => {
         flashcardId,
         'some concept',
         'definition of the concept',
-        'partition-id',
+        'box-partition-id',
       ),
     );
 
@@ -119,7 +139,7 @@ describe('PostgresFlashcardRepository', () => {
       id: flashcardId,
       front: 'some concept',
       back: 'definition of the concept',
-      partitionId: 'partition-id',
+      partitionId: 'box-partition-id',
     });
   });
 });

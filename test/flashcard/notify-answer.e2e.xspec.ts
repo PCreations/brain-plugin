@@ -1,7 +1,5 @@
-import { PrismaTestingHelper } from '@chax-at/transactional-prisma-testing';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConfigModule } from '@nestjs/config';
 import { AppModule } from 'src/app.module';
 import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 import { configureApp } from 'src/main';

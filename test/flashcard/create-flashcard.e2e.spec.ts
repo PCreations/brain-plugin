@@ -3,18 +3,17 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigModule } from '@nestjs/config';
 import { AppModule } from 'src/app.module';
-import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 import { configureApp } from 'src/main';
 import * as request from 'supertest';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
-import { InMemoryFlashcardRepository } from 'src/flashcard/infra/inmemory-flashcard.repository';
 import { BoxRepository } from 'src/flashcard/model/box.repository';
+import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 
 describe('Feature: Creating a flashcard', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   let prismaTestingHelper: PrismaTestingHelper<PrismaService> | undefined;
-  const flashcardRepository = new InMemoryFlashcardRepository();
+  let flashcardRepository: FlashcardRepository;
   let boxRepository: BoxRepository;
 
   beforeEach(async () => {
@@ -24,7 +23,9 @@ describe('Feature: Creating a flashcard', () => {
       prisma = prismaTestingHelper.getProxyClient();
     }
 
-    await prismaTestingHelper.startNewTransaction();
+    await prismaTestingHelper.startNewTransaction({
+      timeout: 30000,
+    });
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -37,11 +38,10 @@ describe('Feature: Creating a flashcard', () => {
       )
       .overrideProvider(PrismaService)
       .useValue(prisma)
-      .overrideProvider(FlashcardRepository)
-      .useValue(flashcardRepository)
       .compile();
     boxRepository = moduleFixture.get<BoxRepository>(BoxRepository);
-    prisma = moduleFixture.get<PrismaService>(PrismaService);
+    flashcardRepository =
+      moduleFixture.get<FlashcardRepository>(FlashcardRepository);
     app = moduleFixture.createNestApplication();
     await configureApp(app);
     await app.init();
