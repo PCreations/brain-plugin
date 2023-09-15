@@ -12,7 +12,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
   const boxRepository = new InMemoryBoxRepository();
 
   beforeAll(async () => {
-    await boxRepository.save(Box.emptyBoxOfId('ze-box'));
+    await boxRepository.save(box);
   });
 
   beforeEach(() => {
@@ -22,10 +22,13 @@ describe('Feature: notifying an answer to a flashcard', () => {
   });
 
   test('Example: A flashcard is in the first partition and we notify a correct answer, then the flashcard should move to the second partition', async () => {
+    // const today = new Date('2023-09-15T17:10:00.000Z');
+    // await fixture.givenNowIs(today);
     await fixture.givenExistingFlashcard(
       flashcardBuilder()
+        .withinBox(box)
         .ofId('flashcard-id')
-        .inPartition(box.partitions[0].id)
+        .inPartition(1)
         .build(),
     );
 
@@ -34,17 +37,22 @@ describe('Feature: notifying an answer to a flashcard', () => {
       isCorrect: true,
     });
 
-    await fixture.thenFlashcardShouldBeInPartition({
-      flashcardId: 'flashcard-id',
-      partitionNumber: 2,
-    });
+    await fixture.thenFlashcardShouldBe(
+      flashcardBuilder()
+        .withinBox(box)
+        .ofId('flashcard-id')
+        .inPartition(2)
+        // .lastReviewed(today)
+        .build(),
+    );
   });
 
   test('Example: A flashcard is in the second partition and we notify a correct answer, then the flashcard should move to the third partition', async () => {
     await fixture.givenExistingFlashcard(
       flashcardBuilder()
+        .withinBox(box)
         .ofId('flashcard-id')
-        .inPartition(box.partitions[1].id)
+        .inPartition(2)
         .build(),
     );
 
@@ -53,17 +61,21 @@ describe('Feature: notifying an answer to a flashcard', () => {
       isCorrect: true,
     });
 
-    await fixture.thenFlashcardShouldBeInPartition({
-      flashcardId: 'flashcard-id',
-      partitionNumber: 3,
-    });
+    await fixture.thenFlashcardShouldBe(
+      flashcardBuilder()
+        .withinBox(box)
+        .ofId('flashcard-id')
+        .inPartition(3)
+        .build(),
+    );
   });
 
   test('Example: A flashcard is in the second partition and we notify a wrong answer, then the flashcard should move back to the first partition', async () => {
     await fixture.givenExistingFlashcard(
       flashcardBuilder()
+        .withinBox(box)
         .ofId('flashcard-id')
-        .inPartition(box.partitions[1].id)
+        .inPartition(2)
         .build(),
     );
 
@@ -72,17 +84,21 @@ describe('Feature: notifying an answer to a flashcard', () => {
       isCorrect: false,
     });
 
-    await fixture.thenFlashcardShouldBeInPartition({
-      flashcardId: 'flashcard-id',
-      partitionNumber: 1,
-    });
+    await fixture.thenFlashcardShouldBe(
+      flashcardBuilder()
+        .withinBox(box)
+        .ofId('flashcard-id')
+        .inPartition(1)
+        .build(),
+    );
   });
 
   test('Example: A flashcard is in the fifth partition and we notify a correct answer, then the flashcard should be archived', async () => {
     await fixture.givenExistingFlashcard(
       flashcardBuilder()
+        .withinBox(box)
         .ofId('flashcard-id')
-        .inPartition(box.partitions[4].id)
+        .inPartition(5)
         .build(),
     );
 
@@ -91,6 +107,8 @@ describe('Feature: notifying an answer to a flashcard', () => {
       isCorrect: true,
     });
 
-    await fixture.thenFlashcardShouldBeArchived('flashcard-id');
+    await fixture.thenFlashcardShouldBe(
+      flashcardBuilder().withinBox(box).ofId('flashcard-id').archived().build(),
+    );
   });
 });

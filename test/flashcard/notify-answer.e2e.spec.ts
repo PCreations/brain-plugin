@@ -60,7 +60,8 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
       await flashcardRepository.save(
         flashcardBuilder()
           .ofId('flashcard-id')
-          .inPartition(zeBox.partitions[0].id)
+          .inPartition(1)
+          .withinBox(zeBox)
           .build(),
       );
 
@@ -83,7 +84,8 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
       await flashcardRepository.save(
         flashcardBuilder()
           .ofId('flashcard-id')
-          .inPartition(zeBox.partitions[1].id)
+          .inPartition(2)
+          .withinBox(zeBox)
           .build(),
       );
 

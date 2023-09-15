@@ -10,8 +10,6 @@ import { InMemoryFlashcardRepository } from 'src/flashcard/infra/inmemory-flashc
 import { BoxRepository } from 'src/flashcard/model/box.repository';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 
-export type PartitionNumber = 1 | 2 | 3 | 4 | 5;
-
 export const createFlashcardFixture = ({
   boxRepository,
 }: {
@@ -37,23 +35,10 @@ export const createFlashcardFixture = ({
       return createFlashcard.execute(createFlashcardCommand);
     },
 
-    async thenFlashcardShouldBeInPartition({
-      flashcardId,
-      partitionNumber,
-    }: {
-      flashcardId: string;
-      partitionNumber: PartitionNumber;
-    }) {
-      const box = await boxRepository.getById('ze-box');
-      const flashcard = await flashcardRepository.getById(flashcardId);
-      expect(flashcard.partitionId).toEqual(
-        box.partitions[partitionNumber - 1].id,
-      );
-    },
-    async thenFlashcardShouldBeArchived(flashcardId: string) {
-      const box = await boxRepository.getById('ze-box');
-      const flashcard = await flashcardRepository.getById(flashcardId);
-      expect(flashcard.partitionId).toEqual(box.archivedPartition.id);
+    async thenFlashcardShouldBe(expectedFlashcard: Flashcard) {
+      const flashcard = await flashcardRepository.getById(expectedFlashcard.id);
+
+      expect(flashcard).toEqual(expectedFlashcard);
     },
   };
 };

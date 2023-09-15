@@ -1,5 +1,6 @@
 import { InMemoryBoxRepository } from '../infra/inmemory-box.repository';
 import { Box } from '../model/box.entity';
+import { flashcardBuilder } from './builders/flashcard.builder';
 import {
   FlashcardFixture,
   createFlashcardFixture,
@@ -8,9 +9,10 @@ import {
 describe('Feature: Creating a flashcard', () => {
   let fixture: FlashcardFixture;
   const boxRepository = new InMemoryBoxRepository();
+  const box = Box.emptyBoxOfId('ze-box');
 
   beforeAll(async () => {
-    await boxRepository.save(Box.emptyBoxOfId('ze-box'));
+    await boxRepository.save(box);
   });
 
   beforeEach(() => {
@@ -26,9 +28,13 @@ describe('Feature: Creating a flashcard', () => {
       back: 'back',
     });
 
-    await fixture.thenFlashcardShouldBeInPartition({
-      flashcardId: 'flashcard-id',
-      partitionNumber: 1,
-    });
+    await fixture.thenFlashcardShouldBe(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .withContent({ front: 'front', back: 'back' })
+        .inPartition(1)
+        .withinBox(box)
+        .build(),
+    );
   });
 });

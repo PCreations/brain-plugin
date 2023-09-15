@@ -1,24 +1,39 @@
+import { Box } from 'src/flashcard/model/box.entity';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 
+export type PartitionNumber = 1 | 2 | 3 | 4 | 5;
+
 export const flashcardBuilder = ({
+  box = Box.emptyBoxOfId('test-box-id'),
   id = 'test-flashcard-id',
   front = 'some concept',
   back = 'some concept definition',
-  partitionId = 'test-partition-id',
+  partitionNumber = 1,
+  isArchived = false,
 }: {
+  box?: Box;
   id?: string;
   front?: string;
   back?: string;
-  partitionId?: string;
+  partitionNumber?: PartitionNumber;
+  isArchived?: boolean;
 } = {}) => {
   const props = {
+    box,
     id,
     front,
     back,
-    partitionId,
+    partitionNumber,
+    isArchived,
   };
 
   return {
+    withinBox(_box: Box) {
+      return flashcardBuilder({
+        ...props,
+        box: _box,
+      });
+    },
     ofId(_id: string) {
       return flashcardBuilder({
         ...props,
@@ -31,10 +46,16 @@ export const flashcardBuilder = ({
         ...content,
       });
     },
-    inPartition(_partitionId: string) {
+    archived() {
       return flashcardBuilder({
         ...props,
-        partitionId: _partitionId,
+        isArchived: true,
+      });
+    },
+    inPartition(_partitionNumber: PartitionNumber) {
+      return flashcardBuilder({
+        ...props,
+        partitionNumber: _partitionNumber,
       });
     },
     build() {
@@ -42,7 +63,9 @@ export const flashcardBuilder = ({
         props.id,
         props.front,
         props.back,
-        props.partitionId,
+        props.isArchived
+          ? box.archivedPartition.id
+          : box.partitions[props.partitionNumber - 1].id,
       );
     },
   };
