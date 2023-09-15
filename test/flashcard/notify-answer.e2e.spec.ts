@@ -2,7 +2,7 @@ import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
-import { configureApp } from 'src/main';
+import { configureApp } from 'src/configure-app';
 import * as request from 'supertest';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 import { BoxRepository } from 'src/flashcard/model/box.repository';
