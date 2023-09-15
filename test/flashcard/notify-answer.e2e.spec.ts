@@ -9,13 +9,18 @@ import { PrismaService } from 'src/flashcard/infra/prisma.service';
 import { PrismaTestingHelper } from '@chax-at/transactional-prisma-testing';
 import { ConfigModule } from '@nestjs/config';
 import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
+import { StubDateProvider } from 'src/flashcard/infra/stub-date-provider';
+import { DateProvider } from 'src/flashcard/model/date-provider';
 
 describe('Feature: Notifying a good answer to a flashcard', () => {
+  const today = new Date('2023-09-15T17:45:00.000Z');
   let app: INestApplication;
   let prisma: PrismaService;
   let prismaTestingHelper: PrismaTestingHelper<PrismaService> | undefined;
   let flashcardRepository: FlashcardRepository;
   let boxRepository: BoxRepository;
+  const stubDateProvider = new StubDateProvider();
+  stubDateProvider.now = today;
 
   beforeEach(async () => {
     if (prismaTestingHelper == null) {
@@ -39,6 +44,8 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
       )
       .overrideProvider(PrismaService)
       .useValue(prisma)
+      .overrideProvider(DateProvider)
+      .useValue(stubDateProvider)
       .compile();
     boxRepository = moduleFixture.get<BoxRepository>(BoxRepository);
     flashcardRepository =
@@ -75,6 +82,7 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
 
       const editedFlashcard = await flashcardRepository.getById('flashcard-id');
       expect(editedFlashcard.partitionId).toEqual(zeBox.partitions[1].id);
+      expect(editedFlashcard.lastReviewedAt).toEqual(today);
     });
   });
 

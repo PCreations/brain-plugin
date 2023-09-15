@@ -17,14 +17,21 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
       flashcard.front,
       flashcard.back,
       flashcard.partitionId,
+      flashcard.lastReviewedAt,
     );
   }
 
   async save(flashcard: Flashcard): Promise<void> {
-    const data: { front: string; back: string; partitionId: string } = {
+    const data: {
+      front: string;
+      back: string;
+      partitionId: string;
+      lastReviewedAt?: Date;
+    } = {
       front: flashcard.front,
       back: flashcard.back,
       partitionId: flashcard.partitionId,
+      lastReviewedAt: flashcard.lastReviewedAt,
     };
     await this.prisma.flashcard.upsert({
       where: { id: flashcard.id },

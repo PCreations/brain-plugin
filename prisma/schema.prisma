@@ -8,11 +8,12 @@ datasource db {
 }
 
 model Flashcard {
-  id          String    @id
-  front       String
-  back        String
-  Partition   Partition @relation(fields: [partitionId], references: [id])
-  partitionId String
+  id             String    @id
+  front          String
+  back           String
+  Partition      Partition @relation(fields: [partitionId], references: [id])
+  partitionId    String
+  lastReviewedAt DateTime?
 }
 
 model Partition {

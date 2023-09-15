@@ -75,6 +75,7 @@ describe('PostgresFlashcardRepository', () => {
         'some concept',
         'definition of the concept',
         'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
       ),
     );
 
@@ -86,6 +87,7 @@ describe('PostgresFlashcardRepository', () => {
       front: 'some concept',
       back: 'definition of the concept',
       partitionId: 'box-partition-id',
+      lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
     });
   });
 
@@ -107,6 +109,7 @@ describe('PostgresFlashcardRepository', () => {
         'some other concept',
         'definition of the other concept',
         'box-partition2-id',
+        new Date('2023-10-15T17:10:00.000Z'),
       ),
     );
 
@@ -118,6 +121,7 @@ describe('PostgresFlashcardRepository', () => {
       front: 'some other concept',
       back: 'definition of the other concept',
       partitionId: 'box-partition2-id',
+      lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
     });
   });
 
@@ -130,6 +134,7 @@ describe('PostgresFlashcardRepository', () => {
         'some concept',
         'definition of the concept',
         'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
       ),
     );
 
@@ -140,6 +145,7 @@ describe('PostgresFlashcardRepository', () => {
       front: 'some concept',
       back: 'definition of the concept',
       partitionId: 'box-partition-id',
+      lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
     });
   });
 });

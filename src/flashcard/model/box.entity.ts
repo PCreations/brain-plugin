@@ -42,33 +42,38 @@ export class Box {
 
   public handleFlashcardAnswer(
     flashcard: Flashcard,
-    { isCorrect }: { isCorrect: boolean },
+    { isCorrect, reviewDate }: { isCorrect: boolean; reviewDate: Date },
   ) {
     if (isCorrect) {
-      return this.putFlashcardInNextPartition(flashcard);
+      return this.putFlashcardInNextPartition(flashcard, reviewDate);
     }
 
-    return this.putFlashcardInPreviousPartition(flashcard);
+    return this.putFlashcardInPreviousPartition(flashcard, reviewDate);
   }
 
-  private putFlashcardInNextPartition(flashcard: Flashcard) {
+  private putFlashcardInNextPartition(flashcard: Flashcard, reviewDate: Date) {
     const actualPartitionNumber = this.partitions.findIndex(
       (partition) => partition.id === flashcard.partitionId,
     );
     if (actualPartitionNumber === 4) {
-      return flashcard.putInPartition(this.archivedPartition.id);
+      return flashcard.putInPartition(this.archivedPartition.id, reviewDate);
     }
     return flashcard.putInPartition(
       this.partitions[actualPartitionNumber + 1].id,
+      reviewDate,
     );
   }
 
-  private putFlashcardInPreviousPartition(flashcard: Flashcard) {
+  private putFlashcardInPreviousPartition(
+    flashcard: Flashcard,
+    reviewDate: Date,
+  ) {
     const actualPartitionNumber = this.partitions.findIndex(
       (partition) => partition.id === flashcard.partitionId,
     );
     return flashcard.putInPartition(
       this.partitions[actualPartitionNumber - 1].id,
+      reviewDate,
     );
   }
 }

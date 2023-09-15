@@ -81,6 +81,7 @@ describe('Feature: Creating a flashcard', () => {
       front: 'Some other concept',
       back: 'Some other concept definition',
       partitionId: zeBox.partitions[0].id,
+      lastReviewedAt: null, // TODO Fixme
     });
   });
 });

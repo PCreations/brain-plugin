@@ -10,6 +10,7 @@ export const flashcardBuilder = ({
   back = 'some concept definition',
   partitionNumber = 1,
   isArchived = false,
+  reviewedAt,
 }: {
   box?: Box;
   id?: string;
@@ -17,6 +18,7 @@ export const flashcardBuilder = ({
   back?: string;
   partitionNumber?: PartitionNumber;
   isArchived?: boolean;
+  reviewedAt?: Date;
 } = {}) => {
   const props = {
     box,
@@ -25,6 +27,7 @@ export const flashcardBuilder = ({
     back,
     partitionNumber,
     isArchived,
+    reviewedAt,
   };
 
   return {
@@ -58,6 +61,12 @@ export const flashcardBuilder = ({
         partitionNumber: _partitionNumber,
       });
     },
+    lastReviewed(_reviewedAt: Date) {
+      return flashcardBuilder({
+        ...props,
+        reviewedAt: _reviewedAt,
+      });
+    },
     build() {
       return new Flashcard(
         props.id,
@@ -66,6 +75,7 @@ export const flashcardBuilder = ({
         props.isArchived
           ? box.archivedPartition.id
           : box.partitions[props.partitionNumber - 1].id,
+        props.reviewedAt,
       );
     },
   };

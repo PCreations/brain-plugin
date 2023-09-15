@@ -22,8 +22,8 @@ describe('Feature: notifying an answer to a flashcard', () => {
   });
 
   test('Example: A flashcard is in the first partition and we notify a correct answer, then the flashcard should move to the second partition', async () => {
-    // const today = new Date('2023-09-15T17:10:00.000Z');
-    // await fixture.givenNowIs(today);
+    const today = new Date('2023-10-15T17:10:00.000Z');
+    fixture.givenNowIs(today);
     await fixture.givenExistingFlashcard(
       flashcardBuilder()
         .withinBox(box)
@@ -42,7 +42,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
         .withinBox(box)
         .ofId('flashcard-id')
         .inPartition(2)
-        // .lastReviewed(today)
+        .lastReviewed(today)
         .build(),
     );
   });
