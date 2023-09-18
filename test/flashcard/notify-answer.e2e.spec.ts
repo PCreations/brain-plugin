@@ -5,45 +5,34 @@ import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 import { configureApp } from 'src/configure-app';
 import * as request from 'supertest';
 import { BoxRepository } from 'src/flashcard/model/box.repository';
-import { PrismaService } from 'src/flashcard/infra/prisma.service';
-import { PrismaTestingHelper } from '@chax-at/transactional-prisma-testing';
-import { ConfigModule } from '@nestjs/config';
 import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
 import { StubDateProvider } from 'src/flashcard/infra/stub-date-provider';
 import { DateProvider } from 'src/flashcard/model/date-provider';
+import { createTestEnv } from '../test.env';
+import { PrismaService } from 'src/flashcard/infra/prisma.service';
 
 describe('Feature: Notifying a good answer to a flashcard', () => {
   const today = new Date('2023-09-15T17:45:00.000Z');
   let app: INestApplication;
-  let prisma: PrismaService;
-  let prismaTestingHelper: PrismaTestingHelper<PrismaService> | undefined;
   let flashcardRepository: FlashcardRepository;
   let boxRepository: BoxRepository;
   const stubDateProvider = new StubDateProvider();
   stubDateProvider.now = today;
+  const testEnv = createTestEnv();
+  beforeAll(async () => {
+    await testEnv.setUp();
+  });
+
+  afterAll(async () => {
+    await testEnv.tearDown();
+  });
 
   beforeEach(async () => {
-    if (prismaTestingHelper == null) {
-      const originalPrismaService = new PrismaService();
-      prismaTestingHelper = new PrismaTestingHelper(originalPrismaService);
-      prisma = prismaTestingHelper.getProxyClient();
-    }
-
-    await prismaTestingHelper.startNewTransaction({
-      timeout: 30000,
-    });
-
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideModule(ConfigModule)
-      .useModule(
-        ConfigModule.forRoot({
-          envFilePath: '.env.e2e',
-        }),
-      )
       .overrideProvider(PrismaService)
-      .useValue(prisma)
+      .useValue(testEnv.prismaClient)
       .overrideProvider(DateProvider)
       .useValue(stubDateProvider)
       .compile();
@@ -53,10 +42,6 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
     app = moduleFixture.createNestApplication();
     await configureApp(app);
     await app.init();
-  });
-
-  afterEach(() => {
-    prismaTestingHelper?.rollbackCurrentTransaction();
   });
 
   afterAll(() => app.close());

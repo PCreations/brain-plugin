@@ -1,57 +1,28 @@
-import { PrismaClient } from '@prisma/client';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { PrismaService } from '../prisma.service';
 import { PostgresBoxRepository } from '../postgres-box.repository';
 import { Box } from 'src/flashcard/model/box.entity';
-
-const asyncExec = promisify(exec);
+import { createTestEnv } from 'test/test.env';
 
 describe('PostgresBoxRepository', () => {
-  let container: StartedPostgreSqlContainer;
-  let prismaClient: PrismaService;
+  const testEnv = createTestEnv();
   beforeAll(async () => {
-    container = await new PostgreSqlContainer()
-      .withDatabase('brain-test')
-      .withUsername('brain-test')
-      .withPassword('brain-test')
-      .withExposedPorts(5432)
-      .start();
-    const databaseUrl = `postgresql://brain-test:brain-test@${container.getHost()}:${container.getMappedPort(
-      5432,
-    )}/brain-test?schema=public`;
-    prismaClient = new PrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
-    }) as PrismaService;
-    await asyncExec(`DATABASE_URL=${databaseUrl} npx prisma migrate deploy`);
-
-    await prismaClient.$connect();
+    await testEnv.setUp();
   });
 
   afterAll(async () => {
-    await container.stop({ timeout: 1000 });
-    return prismaClient.$disconnect();
+    await testEnv.tearDown();
   });
 
   beforeEach(async () => {
-    await prismaClient.box.deleteMany();
+    await testEnv.prismaClient.box.deleteMany();
   });
 
   test('save() should save a new box', async () => {
-    const boxRepository = new PostgresBoxRepository(prismaClient);
+    const boxRepository = new PostgresBoxRepository(testEnv.prismaClient);
     const boxId = 'box-id';
     const box = Box.emptyBoxOfId(boxId);
     await boxRepository.save(box);
 
-    const expectedBox = await prismaClient.box.findUnique({
+    const expectedBox = await testEnv.prismaClient.box.findUnique({
       where: { id: boxId },
       select: {
         id: true,
@@ -77,13 +48,13 @@ describe('PostgresBoxRepository', () => {
   });
 
   test('save() should update a box', async () => {
-    const boxRepository = new PostgresBoxRepository(prismaClient);
+    const boxRepository = new PostgresBoxRepository(testEnv.prismaClient);
     const boxId = 'box-id';
     const box = Box.emptyBoxOfId(boxId);
     await boxRepository.save(box);
     await boxRepository.save(box);
 
-    const expectedBox = await prismaClient.box.findUnique({
+    const expectedBox = await testEnv.prismaClient.box.findUnique({
       where: { id: boxId },
       select: {
         id: true,
@@ -109,17 +80,17 @@ describe('PostgresBoxRepository', () => {
   });
 
   test('getById() should return a box by its id', async () => {
-    const boxRepository = new PostgresBoxRepository(prismaClient);
+    const boxRepository = new PostgresBoxRepository(testEnv.prismaClient);
     const boxId = 'box-id';
     const box = Box.emptyBoxOfId(boxId);
-    await prismaClient.box.upsert({
+    await testEnv.prismaClient.box.upsert({
       where: { id: box.id },
       update: { id: box.id },
       create: {
         id: box.id,
       },
     });
-    await prismaClient.partition.createMany({
+    await testEnv.prismaClient.partition.createMany({
       skipDuplicates: true,
       data: [
         {

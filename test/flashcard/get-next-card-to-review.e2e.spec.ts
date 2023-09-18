@@ -9,8 +9,9 @@ import {
 } from '@nestjs/platform-fastify';
 import { createTestEnv } from '../test.env';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
+import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
 
-describe('Feature: Creating a flashcard', () => {
+describe('Feature: Getting the next flashcard to review', () => {
   let app: NestFastifyApplication;
   let flashcardRepository: FlashcardRepository;
   let boxRepository: BoxRepository;
@@ -45,27 +46,45 @@ describe('Feature: Creating a flashcard', () => {
     await app.close();
   });
 
-  test('/api/flashcard/create (POST)', async () => {
-    const zeBox = await boxRepository.getById('ze-box');
+  test('/api/flashcard/get-next-card-to-review (GET) : no cards to review', async () => {
     const response = await app.inject({
-      method: 'POST',
-      url: '/api/flashcard/create',
-      body: {
-        id: 'flashcard-id',
-        front: 'Some other concept',
-        back: 'Some other concept definition',
-      },
+      method: 'GET',
+      url: '/api/flashcard/get-next-card-to-review',
     });
 
-    const savedFlashcard = await flashcardRepository.getById('flashcard-id');
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(
+      JSON.stringify({
+        flashcard: 'NO_FLASHCARD_TO_REVIEW',
+      }),
+    );
+  });
 
-    expect(response.statusCode).toBe(201);
-    expect(savedFlashcard).toEqual({
-      id: 'flashcard-id',
-      front: 'Some other concept',
-      back: 'Some other concept definition',
-      partitionId: zeBox.partitions[0].id,
-      lastReviewedAt: undefined,
+  test('/api/flashcard/get-next-card-to-review (GET) : no cards to review', async () => {
+    const box = await boxRepository.getById('ze-box');
+    await flashcardRepository.save(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .withContent({ front: 'front', back: 'back' })
+        .inPartition(1)
+        .withinBox(box)
+        .build(),
+    );
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/flashcard/get-next-card-to-review',
     });
+
+    expect(response.statusCode).toBe(200);
+    expect(response.body).toEqual(
+      JSON.stringify({
+        flashcard: {
+          id: 'flashcard-id',
+          front: 'front',
+          back: 'back',
+        },
+      }),
+    );
   });
 });

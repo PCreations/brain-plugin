@@ -1,56 +1,27 @@
-import { PrismaClient } from '@prisma/client';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import {
-  PostgreSqlContainer,
-  StartedPostgreSqlContainer,
-} from '@testcontainers/postgresql';
-import { PrismaService } from '../prisma.service';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 import { PostgresFlashcardRepository } from '../postgres-flashcard.repository';
-
-const asyncExec = promisify(exec);
+import { createTestEnv } from 'test/test.env';
 
 describe('PostgresFlashcardRepository', () => {
-  let container: StartedPostgreSqlContainer;
-  let prismaClient: PrismaService;
+  const testEnv = createTestEnv();
   beforeAll(async () => {
-    container = await new PostgreSqlContainer()
-      .withDatabase('brain-test')
-      .withUsername('brain-test')
-      .withPassword('brain-test')
-      .withExposedPorts(5432)
-      .start();
-    const databaseUrl = `postgresql://brain-test:brain-test@${container.getHost()}:${container.getMappedPort(
-      5432,
-    )}/brain-test?schema=public`;
-    prismaClient = new PrismaClient({
-      datasources: {
-        db: {
-          url: databaseUrl,
-        },
-      },
-    }) as PrismaService;
-    await asyncExec(`DATABASE_URL=${databaseUrl} npx prisma migrate deploy`);
-
-    await prismaClient.$connect();
+    await testEnv.setUp();
   });
 
   afterAll(async () => {
-    await container.stop({ timeout: 1000 });
-    return prismaClient.$disconnect();
+    await testEnv.tearDown();
   });
 
   beforeEach(async () => {
-    await prismaClient.flashcard.deleteMany();
-    await prismaClient.box.upsert({
+    await testEnv.prismaClient.flashcard.deleteMany();
+    await testEnv.prismaClient.box.upsert({
       where: { id: 'box-id' },
       update: { id: 'box-id' },
       create: {
         id: 'box-id',
       },
     });
-    await prismaClient.partition.createMany({
+    await testEnv.prismaClient.partition.createMany({
       skipDuplicates: true,
       data: [
         {
@@ -68,7 +39,9 @@ describe('PostgresFlashcardRepository', () => {
   });
 
   test('save() should save a new flashcard', async () => {
-    const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
+    const flashcardRepository = new PostgresFlashcardRepository(
+      testEnv.prismaClient,
+    );
     const flashcardId = 'flashcard-id';
 
     await flashcardRepository.save(
@@ -81,7 +54,7 @@ describe('PostgresFlashcardRepository', () => {
       ),
     );
 
-    const expectedFlashcard = await prismaClient.flashcard.findUnique({
+    const expectedFlashcard = await testEnv.prismaClient.flashcard.findUnique({
       where: { id: flashcardId },
     });
     expect(expectedFlashcard).toEqual({
@@ -94,7 +67,9 @@ describe('PostgresFlashcardRepository', () => {
   });
 
   test('save() should update an existing flashcard', async () => {
-    const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
+    const flashcardRepository = new PostgresFlashcardRepository(
+      testEnv.prismaClient,
+    );
     const flashcardId = 'flashcard-id';
     await flashcardRepository.save(
       new Flashcard(
@@ -115,7 +90,7 @@ describe('PostgresFlashcardRepository', () => {
       ),
     );
 
-    const expectedFlashcard = await prismaClient.flashcard.findUnique({
+    const expectedFlashcard = await testEnv.prismaClient.flashcard.findUnique({
       where: { id: flashcardId },
     });
     expect(expectedFlashcard).toEqual({
@@ -128,7 +103,9 @@ describe('PostgresFlashcardRepository', () => {
   });
 
   test('getById() should return a flashcard by its id', async () => {
-    const flashcardRepository = new PostgresFlashcardRepository(prismaClient);
+    const flashcardRepository = new PostgresFlashcardRepository(
+      testEnv.prismaClient,
+    );
     const flashcardId = 'flashcard-id';
     await flashcardRepository.save(
       new Flashcard(
