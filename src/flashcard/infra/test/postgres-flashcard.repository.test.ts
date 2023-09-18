@@ -1,6 +1,6 @@
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 import { PostgresFlashcardRepository } from '../postgres-flashcard.repository';
-import { createTestEnv } from 'test/test.env';
+import { createTestEnv } from 'src/test.env';
 
 describe('PostgresFlashcardRepository', () => {
   const testEnv = createTestEnv();

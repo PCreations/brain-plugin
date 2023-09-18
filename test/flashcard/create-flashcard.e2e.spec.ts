@@ -7,7 +7,7 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
-import { createTestEnv } from '../test.env';
+import { createTestEnv } from '../../src/test.env';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
 
 describe('Feature: Creating a flashcard', () => {

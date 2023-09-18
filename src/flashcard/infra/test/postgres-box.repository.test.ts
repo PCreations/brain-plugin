@@ -1,6 +1,6 @@
 import { PostgresBoxRepository } from '../postgres-box.repository';
 import { Box } from 'src/flashcard/model/box.entity';
-import { createTestEnv } from 'test/test.env';
+import { createTestEnv } from 'src/test.env';
 
 describe('PostgresBoxRepository', () => {
   const testEnv = createTestEnv();

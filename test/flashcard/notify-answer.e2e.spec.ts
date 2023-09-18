@@ -8,7 +8,7 @@ import { BoxRepository } from 'src/flashcard/model/box.repository';
 import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
 import { StubDateProvider } from 'src/flashcard/infra/stub-date-provider';
 import { DateProvider } from 'src/flashcard/model/date-provider';
-import { createTestEnv } from '../test.env';
+import { createTestEnv } from '../../src/test.env';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
 
 describe('Feature: Notifying a good answer to a flashcard', () => {

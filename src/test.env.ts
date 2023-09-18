@@ -5,7 +5,7 @@ import {
   PostgreSqlContainer,
   StartedPostgreSqlContainer,
 } from '@testcontainers/postgresql';
-import { PrismaService } from '../src/flashcard/infra/prisma.service';
+import { PrismaService } from './flashcard/infra/prisma.service';
 
 const asyncExec = promisify(exec);
 

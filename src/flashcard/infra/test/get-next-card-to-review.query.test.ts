@@ -4,7 +4,7 @@ import { PostgresFlashcardRepository } from '../postgres-flashcard.repository';
 import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
 import { GetNextCardToReview } from 'src/flashcard/features/get-next-card-to-review/get-next-card-to-review.query';
 import { StubDateProvider } from '../stub-date-provider';
-import { createTestEnv } from 'test/test.env';
+import { createTestEnv } from 'src/test.env';
 
 describe('GetNextCardToReview', () => {
   const testEnv = createTestEnv();
