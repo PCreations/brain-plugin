@@ -11,9 +11,4 @@ export class AppController {
   aiPlugin() {
     return aiPluginJson;
   }
-
-  @Get('hello-world')
-  helloWorld() {
-    return 'Hello World';
-  }
 }

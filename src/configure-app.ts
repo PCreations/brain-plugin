@@ -2,7 +2,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { BoxRepository } from './flashcard/model/box.repository';
 import { Box } from './flashcard/model/box.entity';
 
-export const configureApp = async (app: INestApplication<unknown>) => {
+export const configureApp = async (app: INestApplication) => {
   app.enableCors({
     origin: '*',
   });

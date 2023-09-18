@@ -7,7 +7,7 @@ import { FlashcardModule } from './flashcard/flashcard.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env.e2e',
+      envFilePath: '.env',
     }),
     FlashcardModule,
   ],

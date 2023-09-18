@@ -1,7 +1,7 @@
 import {
   PartitionNumber,
   ReviewableFlashcard,
-} from 'src/flashcard/features/get-next-card';
+} from 'src/flashcard/features/get-next-card-to-review/get-next-card';
 import { Box } from 'src/flashcard/model/box.entity';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 

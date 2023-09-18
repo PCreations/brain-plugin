@@ -9,7 +9,7 @@
 import {
   ReviewableFlashcard,
   getNextCardToReview,
-} from '../features/get-next-card';
+} from '../features/get-next-card-to-review/get-next-card';
 import { flashcardBuilder } from './builders/flashcard.builder';
 
 const getTestNextCardToReview = ({

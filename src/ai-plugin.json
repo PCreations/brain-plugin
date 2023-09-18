@@ -3,16 +3,16 @@
   "name_for_model": "BrAIn",
   "name_for_human": "BrAIn",
   "description_for_human": "You're virtual second brain assistant",
-  "description_for_model": "This plugin is designed for reviewing software architecture concepts. It should be used when the user requests to review software architecture notions. The next flashcard to review is then selected, and you should ONLY display the front of the card, and DEFINITELY NOT the back which contains the answer. You MUST wait for the user to provide their answer before offering to show them the back of the card. If the user wants to create a new flaschard, they must provide a front and a back for the card, the front must be concise, representing only a concept, the back should explain this concept in a few sentences only.",
+  "description_for_model": "This plugin is designed for reviewing knowledge. It should be used when the user requests to review their flashcards. The next flashcard to review is then selected, and you should ONLY display the front of the card, and DEFINITELY NOT the back which contains the answer. You MUST wait for the user to provide their answer before offering to show them the back of the card. If the user wants to create a new flaschard, they must provide a front and a back for the card, the front must be concise, representing only a concept, the back should explain this concept in a few sentences only. When the user gives their answer, ask them about how they think they answered the question to notify the plugin about it",
   "api": {
     "type": "openapi",
-    "url": "http://localhost:3002/openapi.json",
+    "url": "https://brain-plugin-production.up.railway.app/openapi.json",
     "has_user_authentication": false
   },
   "auth": {
     "type": "none"
   },
-  "logo_url": "https://weathergpt-three-ashy.vercel.app/logo.png",
+  "logo_url": "https://craftacademy.notion.site/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F5736fe20-9a38-4a0a-8b56-4eb133d8777a%2F1b45a168-7dee-460c-b81a-3557984233c0%2FbrAIn-logo.png?table=block&id=b543779a-9d7d-4a16-aa14-acc6bca01b23&spaceId=5736fe20-9a38-4a0a-8b56-4eb133d8777a&width=600&userId=&cache=v2",
   "contact_email": "stey@vercel.com",
   "legal_info_url": "https://weathergpt-three-ashy.vercel.app/legal"
 }

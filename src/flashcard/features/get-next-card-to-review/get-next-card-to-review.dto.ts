@@ -1,9 +1,27 @@
+import { ApiExtraModels, ApiProperty, getSchemaPath } from '@nestjs/swagger';
+
+export class ReviewableFlashcardDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  front: string;
+
+  @ApiProperty()
+  back: string;
+}
+
+@ApiExtraModels(ReviewableFlashcardDto)
 export class GetNextCardToReviewDto {
-  flashcard:
-    | {
-        id: string;
-        front: string;
-        back: string;
-      }
-    | 'NO_FLASHCARD_TO_REVIEW';
+  @ApiProperty({
+    oneOf: [
+      {
+        $ref: getSchemaPath(ReviewableFlashcardDto),
+      },
+      {
+        type: 'NO_FLASHCARD_TO_REVIEW',
+      },
+    ],
+  })
+  flashcard: ReviewableFlashcardDto | 'NO_FLASHCARD_TO_REVIEW';
 }

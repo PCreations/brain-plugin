@@ -4,7 +4,7 @@ import {
   PartitionNumber,
   ReviewableFlashcard,
   getNextCardToReview,
-} from '../get-next-card';
+} from './get-next-card';
 import { GetNextCardToReviewDto } from './get-next-card-to-review.dto';
 import { DateProvider } from 'src/flashcard/model/date-provider';
 
