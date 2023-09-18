@@ -17,7 +17,7 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
       flashcard.front,
       flashcard.back,
       flashcard.partitionId,
-      flashcard.lastReviewedAt,
+      flashcard.lastReviewedAt ?? undefined,
     );
   }
 

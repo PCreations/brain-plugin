@@ -1,7 +1,9 @@
+import {
+  PartitionNumber,
+  ReviewableFlashcard,
+} from 'src/flashcard/features/get-next-card';
 import { Box } from 'src/flashcard/model/box.entity';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
-
-export type PartitionNumber = 1 | 2 | 3 | 4 | 5;
 
 export const flashcardBuilder = ({
   box = Box.emptyBoxOfId('test-box-id'),
@@ -77,6 +79,15 @@ export const flashcardBuilder = ({
           : box.partitions[props.partitionNumber - 1].id,
         props.reviewedAt,
       );
+    },
+    buildAsReviewableFlashcard(): ReviewableFlashcard {
+      return {
+        id: props.id,
+        front: props.front,
+        back: props.back,
+        lastReviewedAt: props.reviewedAt,
+        partitionNumber: props.partitionNumber,
+      };
     },
   };
 };

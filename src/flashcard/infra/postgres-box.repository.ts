@@ -16,6 +16,9 @@ export class PostgresBoxRepository implements BoxRepository {
           select: {
             id: true,
           },
+          orderBy: {
+            partitionNumber: 'asc',
+          },
         },
       },
     });
@@ -47,26 +50,32 @@ export class PostgresBoxRepository implements BoxRepository {
         {
           boxId: box.id,
           id: box.partitions[0].id,
+          partitionNumber: 1,
         },
         {
           boxId: box.id,
           id: box.partitions[1].id,
+          partitionNumber: 2,
         },
         {
           boxId: box.id,
           id: box.partitions[2].id,
+          partitionNumber: 3,
         },
         {
           boxId: box.id,
           id: box.partitions[3].id,
+          partitionNumber: 4,
         },
         {
           boxId: box.id,
           id: box.partitions[4].id,
+          partitionNumber: 5,
         },
         {
           boxId: box.id,
           id: box.archivedPartition.id,
+          partitionNumber: 6,
         },
       ],
     });

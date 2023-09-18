@@ -56,10 +56,12 @@ describe('PostgresFlashcardRepository', () => {
         {
           boxId: 'box-id',
           id: 'box-partition-id',
+          partitionNumber: 1,
         },
         {
           boxId: 'box-id',
           id: 'box-partition2-id',
+          partitionNumber: 2,
         },
       ],
     });

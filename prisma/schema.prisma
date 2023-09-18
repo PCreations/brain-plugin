@@ -17,10 +17,11 @@ model Flashcard {
 }
 
 model Partition {
-  id         String      @id
-  flashcards Flashcard[]
-  box        Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
-  boxId      String
+  id              String      @id
+  partitionNumber Int
+  flashcards      Flashcard[]
+  box             Box         @relation(fields: [boxId], references: [id], onDelete: Cascade)
+  boxId           String
 }
 
 model Box {
