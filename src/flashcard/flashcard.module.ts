@@ -38,5 +38,6 @@ import { GetNextCardToReview } from './features/get-next-card-to-review/get-next
       useClass: RealDateProvider,
     },
   ],
+  exports: [PrismaService],
 })
 export class FlashcardModule {}
