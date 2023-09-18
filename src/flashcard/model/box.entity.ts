@@ -72,7 +72,7 @@ export class Box {
       (partition) => partition.id === flashcard.partitionId,
     );
     return flashcard.putInPartition(
-      this.partitions[actualPartitionNumber - 1].id,
+      this.partitions[Math.max(0, actualPartitionNumber - 1)].id,
       reviewDate,
     );
   }

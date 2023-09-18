@@ -93,6 +93,29 @@ describe('Feature: notifying an answer to a flashcard', () => {
     );
   });
 
+  test('Example: A flashcard is in the first partition and we notify a wrong answer, then the flashcard should stay in the first partition', async () => {
+    await fixture.givenExistingFlashcard(
+      flashcardBuilder()
+        .withinBox(box)
+        .ofId('flashcard-id')
+        .inPartition(1)
+        .build(),
+    );
+
+    await fixture.whenNotifyingAnswer({
+      flashcardId: 'flashcard-id',
+      isCorrect: false,
+    });
+
+    await fixture.thenFlashcardShouldBe(
+      flashcardBuilder()
+        .withinBox(box)
+        .ofId('flashcard-id')
+        .inPartition(1)
+        .build(),
+    );
+  });
+
   test('Example: A flashcard is in the fifth partition and we notify a correct answer, then the flashcard should be archived', async () => {
     await fixture.givenExistingFlashcard(
       flashcardBuilder()
