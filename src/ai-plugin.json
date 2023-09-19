@@ -10,11 +10,8 @@
     "has_user_authentication": false
   },
   "auth": {
-    "type": "service_http",
-    "authorization_type": "bearer",
-    "verification_tokens": {
-      "openai": "Replace_this_string_with_the_verification_token_generated_in_the_ChatGPT_UI"
-    }
+    "type": "user_http",
+    "authorization_type": "bearer"
   },
   "logo_url": "https://craftacademy.notion.site/image/https%3A%2F%2Fprod-files-secure.s3.us-west-2.amazonaws.com%2F5736fe20-9a38-4a0a-8b56-4eb133d8777a%2F1b45a168-7dee-460c-b81a-3557984233c0%2FbrAIn-logo.png?table=block&id=b543779a-9d7d-4a16-aa14-acc6bca01b23&spaceId=5736fe20-9a38-4a0a-8b56-4eb133d8777a&width=600&userId=&cache=v2",
   "contact_email": "stey@vercel.com",

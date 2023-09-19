@@ -12,8 +12,8 @@ export type ReviewableFlashcard = {
 
 enum Interval {
   EveryDay = 1,
-  EveryThreeDays = 3,
-  TwiceAweek = 4,
+  TwiceAweek = 3,
+  OnceAweek = 4,
   TwiceAmonth = 15,
   OnceAmonth = 30,
 }
@@ -22,8 +22,8 @@ const reviewIntervalByPartition: {
   [partitionNumber in PartitionNumber]: Interval;
 } = {
   1: Interval.EveryDay,
-  2: Interval.EveryThreeDays,
-  3: Interval.TwiceAweek,
+  2: Interval.TwiceAweek,
+  3: Interval.OnceAweek,
   4: Interval.TwiceAmonth,
   5: Interval.OnceAmonth,
 };
