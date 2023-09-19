@@ -1,8 +1,9 @@
 import { Body, Controller, Put, Req } from '@nestjs/common';
 import { NotifyAnswer } from './notify-answer.usecase';
 import { NotifyAnswerDto } from './notify-answer.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('api/flashcard')
 export class NotifyAnswerController {
   constructor(private readonly notifyAnswer: NotifyAnswer) {}

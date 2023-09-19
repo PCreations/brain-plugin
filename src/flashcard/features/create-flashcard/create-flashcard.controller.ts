@@ -1,8 +1,9 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { CreateFlashcard } from './create-flashcard.usecase';
 import { CreateFlashcardDto } from './create-flashcard.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('api/flashcard')
 export class CreateFlashcardController {
   constructor(private readonly createFlashcard: CreateFlashcard) {}

@@ -1,7 +1,8 @@
 import { Controller, Get, Req } from '@nestjs/common';
 import { GetNextCardToReview } from './get-next-card-to-review.query';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('api/flashcard')
 export class GetNextCardToReviewController {
   constructor(private readonly getNextCardToReview: GetNextCardToReview) {}
