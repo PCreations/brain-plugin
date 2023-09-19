@@ -19,6 +19,7 @@ describe('PostgresFlashcardRepository', () => {
       update: { id: 'box-id' },
       create: {
         id: 'box-id',
+        userId: 'user-id',
       },
     });
     await testEnv.prismaClient.partition.createMany({

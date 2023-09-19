@@ -15,9 +15,10 @@ export class Box {
       Partition,
     ],
     readonly archivedPartition: Partition,
+    readonly userId: string,
   ) {}
 
-  static emptyBoxOfId(id: string) {
+  static emptyBoxOfIdForUser(id: string, userId: string) {
     return new Box(
       id,
       [
@@ -28,6 +29,7 @@ export class Box {
         new Partition(`${id}-5`),
       ],
       new Partition(`${id}-archive`),
+      userId,
     );
   }
 

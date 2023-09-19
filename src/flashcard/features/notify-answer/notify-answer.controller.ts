@@ -1,4 +1,4 @@
-import { Body, Controller, Put } from '@nestjs/common';
+import { Body, Controller, Put, Req } from '@nestjs/common';
 import { NotifyAnswer } from './notify-answer.usecase';
 import { NotifyAnswerDto } from './notify-answer.dto';
 import { ApiOperation } from '@nestjs/swagger';
@@ -12,10 +12,14 @@ export class NotifyAnswerController {
       'Use this endpoint to notify the answer the user has given to a specific flashcard in order this flashcard to be moved in the appropriate partition in the user box',
   })
   @Put('notify-answer')
-  async notifyFlashcardAnswer(@Body() notifyAnswerDto: NotifyAnswerDto) {
+  async notifyFlashcardAnswer(
+    @Body() notifyAnswerDto: NotifyAnswerDto,
+    @Req() req,
+  ) {
     return this.notifyAnswer.execute({
       flashcardId: notifyAnswerDto.flashcardId,
       isCorrect: notifyAnswerDto.isCorrect,
+      userId: req.user.uid,
     });
   }
 }

@@ -6,6 +6,7 @@ import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 export class NotifyAnswerCommand {
   flashcardId: string;
   isCorrect: boolean;
+  userId: string;
 }
 
 @Injectable()
@@ -17,7 +18,9 @@ export class NotifyAnswer {
   ) {}
 
   async execute(notifyAnswerCommand: NotifyAnswerCommand) {
-    const box = await this.boxRepository.getById('ze-box');
+    const box = await this.boxRepository.getByUserId(
+      notifyAnswerCommand.userId,
+    );
     const flashcard = await this.flashcardRepository.getById(
       notifyAnswerCommand.flashcardId,
     );

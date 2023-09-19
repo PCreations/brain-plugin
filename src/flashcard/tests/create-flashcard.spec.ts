@@ -9,11 +9,6 @@ import {
 describe('Feature: Creating a flashcard', () => {
   let fixture: FlashcardFixture;
   const boxRepository = new InMemoryBoxRepository();
-  const box = Box.emptyBoxOfId('ze-box');
-
-  beforeAll(async () => {
-    await boxRepository.save(box);
-  });
 
   beforeEach(() => {
     fixture = createFlashcardFixture({
@@ -21,11 +16,37 @@ describe('Feature: Creating a flashcard', () => {
     });
   });
 
-  test('A created flashcard should be added in the first partition of the box', async () => {
+  test('A new box should be created if there is no box for the current user', async () => {
+    const expectedBobBox = Box.emptyBoxOfIdForUser('bob-box-id', 'bob');
+    fixture.givenTheNextBoxIdWillBe('bob-box-id');
+
     await fixture.whenCreatingFlashcard({
       id: 'flashcard-id',
       front: 'front',
       back: 'back',
+      userId: 'bob',
+    });
+
+    await fixture.thenFlashcardShouldBe(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .withContent({ front: 'front', back: 'back' })
+        .inPartition(1)
+        .withinBox(expectedBobBox)
+        .build(),
+    );
+    await fixture.thenBoxShouldBe(expectedBobBox);
+  });
+
+  test('A created flashcard should be added in the first partition of the box', async () => {
+    const box = Box.emptyBoxOfIdForUser('bob-box-id', 'bob');
+    fixture.givenExistingBox(box);
+
+    await fixture.whenCreatingFlashcard({
+      id: 'flashcard-id',
+      front: 'front',
+      back: 'back',
+      userId: 'bob',
     });
 
     await fixture.thenFlashcardShouldBe(

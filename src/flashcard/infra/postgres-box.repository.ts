@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { v4 as uuidv4 } from 'uuid';
 import { PrismaService } from './prisma.service';
 import { BoxRepository } from '../model/box.repository';
 import { Box, Partition } from '../model/box.entity';
@@ -7,11 +8,12 @@ import { Box, Partition } from '../model/box.entity';
 export class PostgresBoxRepository implements BoxRepository {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getById(boxId: string): Promise<Box> {
-    const boxData = await this.prisma.box.findUnique({
-      where: { id: boxId },
+  async getByUserId(userId: string): Promise<Box> {
+    const boxData = await this.prisma.box.findFirstOrThrow({
+      where: { userId },
       select: {
         id: true,
+        userId: true,
         Partition: {
           select: {
             id: true,
@@ -33,6 +35,42 @@ export class PostgresBoxRepository implements BoxRepository {
         new Partition(boxData.Partition[4].id),
       ],
       new Partition(boxData.Partition[5].id),
+      boxData.userId,
+    );
+  }
+
+  getNextBoxId(): string {
+    return uuidv4();
+  }
+
+  async getById(boxId: string): Promise<Box> {
+    const boxData = await this.prisma.box.findUniqueOrThrow({
+      where: { id: boxId },
+      select: {
+        id: true,
+        userId: true,
+        Partition: {
+          select: {
+            id: true,
+          },
+          orderBy: {
+            partitionNumber: 'asc',
+          },
+        },
+      },
+    });
+
+    return new Box(
+      boxData.id,
+      [
+        new Partition(boxData.Partition[0].id),
+        new Partition(boxData.Partition[1].id),
+        new Partition(boxData.Partition[2].id),
+        new Partition(boxData.Partition[3].id),
+        new Partition(boxData.Partition[4].id),
+      ],
+      new Partition(boxData.Partition[5].id),
+      boxData.userId,
     );
   }
 
@@ -42,6 +80,7 @@ export class PostgresBoxRepository implements BoxRepository {
       update: { id: box.id },
       create: {
         id: box.id,
+        userId: box.userId,
       },
     });
     await this.prisma.partition.createMany({

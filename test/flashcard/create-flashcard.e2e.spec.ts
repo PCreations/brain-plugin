@@ -9,11 +9,14 @@ import {
 } from '@nestjs/platform-fastify';
 import { createTestEnv } from '../../src/test.env';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
+import { Box } from 'src/flashcard/model/box.entity';
+import { StubAuthenticationGateway } from 'src/auth/stub-authentication.gateway';
 
 describe('Feature: Creating a flashcard', () => {
   let app: NestFastifyApplication;
   let flashcardRepository: FlashcardRepository;
   let boxRepository: BoxRepository;
+  let userBox: Box;
   const testEnv = createTestEnv();
   beforeAll(async () => {
     await testEnv.setUp();
@@ -39,6 +42,11 @@ describe('Feature: Creating a flashcard', () => {
     await configureApp(app);
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
+    userBox = Box.emptyBoxOfIdForUser(
+      'box-id',
+      StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID,
+    );
+    await boxRepository.save(userBox);
   });
 
   afterAll(async () => {
@@ -46,10 +54,12 @@ describe('Feature: Creating a flashcard', () => {
   });
 
   test('/api/flashcard/create (POST)', async () => {
-    const zeBox = await boxRepository.getById('ze-box');
     const response = await app.inject({
       method: 'POST',
       url: '/api/flashcard/create',
+      headers: {
+        authorization: `Bearer ${StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID}`,
+      },
       body: {
         id: 'flashcard-id',
         front: 'Some other concept',
@@ -64,7 +74,7 @@ describe('Feature: Creating a flashcard', () => {
       id: 'flashcard-id',
       front: 'Some other concept',
       back: 'Some other concept definition',
-      partitionId: zeBox.partitions[0].id,
+      partitionId: userBox.partitions[0].id,
       lastReviewedAt: undefined,
     });
   });

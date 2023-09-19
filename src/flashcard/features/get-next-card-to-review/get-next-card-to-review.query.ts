@@ -15,10 +15,14 @@ export class GetNextCardToReview {
     private readonly dateProvider: DateProvider,
   ) {}
 
-  async execute({ boxId }: { boxId: string }): Promise<GetNextCardToReviewDto> {
+  async execute({
+    userId,
+  }: {
+    userId: string;
+  }): Promise<GetNextCardToReviewDto> {
     const result = await this.prismaClient.box.findFirstOrThrow({
       where: {
-        id: boxId,
+        userId: userId,
       },
       select: {
         Partition: {

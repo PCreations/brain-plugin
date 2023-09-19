@@ -6,7 +6,7 @@ import { Box } from 'src/flashcard/model/box.entity';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 
 export const flashcardBuilder = ({
-  box = Box.emptyBoxOfId('test-box-id'),
+  box = Box.emptyBoxOfIdForUser('test-box-id', 'test-user-id'),
   id = 'test-flashcard-id',
   front = 'some concept',
   back = 'some concept definition',

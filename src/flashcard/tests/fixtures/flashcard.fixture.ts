@@ -6,15 +6,16 @@ import {
   NotifyAnswer,
   NotifyAnswerCommand,
 } from 'src/flashcard/features/notify-answer/notify-answer.usecase';
+import { InMemoryBoxRepository } from 'src/flashcard/infra/inmemory-box.repository';
 import { InMemoryFlashcardRepository } from 'src/flashcard/infra/inmemory-flashcard.repository';
 import { StubDateProvider } from 'src/flashcard/infra/stub-date-provider';
-import { BoxRepository } from 'src/flashcard/model/box.repository';
+import { Box } from 'src/flashcard/model/box.entity';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
 
 export const createFlashcardFixture = ({
   boxRepository,
 }: {
-  boxRepository: BoxRepository;
+  boxRepository: InMemoryBoxRepository;
 }) => {
   const stubDateProvider = new StubDateProvider();
   const flashcardRepository = new InMemoryFlashcardRepository();
@@ -31,8 +32,14 @@ export const createFlashcardFixture = ({
     async givenExistingFlashcard(flashcard: Flashcard) {
       await flashcardRepository.save(flashcard);
     },
+    async givenExistingBox(box: Box) {
+      await boxRepository.save(box);
+    },
     givenNowIs(now: Date) {
       stubDateProvider.now = now;
+    },
+    givenTheNextBoxIdWillBe(boxId: string) {
+      boxRepository.nextId = boxId;
     },
 
     async whenNotifyingAnswer(notifyAnswerCommand: NotifyAnswerCommand) {
@@ -48,6 +55,11 @@ export const createFlashcardFixture = ({
       const flashcard = await flashcardRepository.getById(expectedFlashcard.id);
 
       expect(flashcard).toEqual(expectedFlashcard);
+    },
+    async thenBoxShouldBe(expectedBox: Box) {
+      const box = await boxRepository.getById(expectedBox.id);
+
+      expect(box).toEqual(expectedBox);
     },
   };
 };

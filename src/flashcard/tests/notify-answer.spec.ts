@@ -8,7 +8,8 @@ import {
 
 describe('Feature: notifying an answer to a flashcard', () => {
   let fixture: FlashcardFixture;
-  const box = Box.emptyBoxOfId('ze-box');
+  const currentUser = 'bob';
+  const box = Box.emptyBoxOfIdForUser('bob-box-id', currentUser);
   const boxRepository = new InMemoryBoxRepository();
 
   beforeAll(async () => {
@@ -35,6 +36,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
     await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: true,
+      userId: currentUser,
     });
 
     await fixture.thenFlashcardShouldBe(
@@ -59,6 +61,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
     await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: true,
+      userId: currentUser,
     });
 
     await fixture.thenFlashcardShouldBe(
@@ -82,6 +85,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
     await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: false,
+      userId: currentUser,
     });
 
     await fixture.thenFlashcardShouldBe(
@@ -105,6 +109,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
     await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: false,
+      userId: currentUser,
     });
 
     await fixture.thenFlashcardShouldBe(
@@ -128,6 +133,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
     await fixture.whenNotifyingAnswer({
       flashcardId: 'flashcard-id',
       isCorrect: true,
+      userId: currentUser,
     });
 
     await fixture.thenFlashcardShouldBe(

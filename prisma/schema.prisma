@@ -26,5 +26,6 @@ model Partition {
 
 model Box {
   id        String      @id
+  userId    String
   Partition Partition[]
 }

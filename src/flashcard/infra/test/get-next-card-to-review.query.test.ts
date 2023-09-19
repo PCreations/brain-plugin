@@ -30,7 +30,7 @@ describe('GetNextCardToReview', () => {
       testEnv.prismaClient,
     );
     const boxId = 'box-id';
-    const box = Box.emptyBoxOfId(boxId);
+    const box = Box.emptyBoxOfIdForUser(boxId, 'user-id');
     await boxRepository.save(box);
     await Promise.all([
       flashcardRepository.save(
@@ -57,7 +57,7 @@ describe('GetNextCardToReview', () => {
     );
 
     const nextCardToReview = await getNextCardToReview.execute({
-      boxId: box.id,
+      userId: 'user-id',
     });
     expect(nextCardToReview).toEqual({
       flashcard: {

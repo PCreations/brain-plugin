@@ -10,11 +10,14 @@ import {
 import { createTestEnv } from '../../src/test.env';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
 import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
+import { StubAuthenticationGateway } from 'src/auth/stub-authentication.gateway';
+import { Box } from 'src/flashcard/model/box.entity';
 
 describe('Feature: Getting the next flashcard to review', () => {
   let app: NestFastifyApplication;
   let flashcardRepository: FlashcardRepository;
   let boxRepository: BoxRepository;
+  let userBox: Box;
   const testEnv = createTestEnv();
   beforeAll(async () => {
     await testEnv.setUp();
@@ -40,6 +43,11 @@ describe('Feature: Getting the next flashcard to review', () => {
     await configureApp(app);
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
+    userBox = Box.emptyBoxOfIdForUser(
+      'box-id',
+      StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID,
+    );
+    await boxRepository.save(userBox);
   });
 
   afterAll(async () => {
@@ -50,6 +58,9 @@ describe('Feature: Getting the next flashcard to review', () => {
     const response = await app.inject({
       method: 'GET',
       url: '/api/flashcard/get-next-card-to-review',
+      headers: {
+        authorization: `Bearer ${StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID}`,
+      },
     });
 
     expect(response.statusCode).toBe(200);
@@ -61,19 +72,21 @@ describe('Feature: Getting the next flashcard to review', () => {
   });
 
   test('/api/flashcard/get-next-card-to-review (GET) : no cards to review', async () => {
-    const box = await boxRepository.getById('ze-box');
     await flashcardRepository.save(
       flashcardBuilder()
         .ofId('flashcard-id')
         .withContent({ front: 'front', back: 'back' })
         .inPartition(1)
-        .withinBox(box)
+        .withinBox(userBox)
         .build(),
     );
 
     const response = await app.inject({
       method: 'GET',
       url: '/api/flashcard/get-next-card-to-review',
+      headers: {
+        authorization: `Bearer ${StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID}`,
+      },
     });
 
     expect(response.statusCode).toBe(200);
