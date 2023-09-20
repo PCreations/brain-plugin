@@ -18,6 +18,8 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
       flashcard.back,
       flashcard.partitionId,
       flashcard.lastReviewedAt ?? undefined,
+      flashcard.flashcard1Id ?? undefined,
+      flashcard.flashcard2Id ?? undefined,
     );
   }
 
@@ -27,11 +29,15 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
       back: string;
       partitionId: string;
       lastReviewedAt?: Date;
+      flashcard1Id?: string;
+      flashcard2Id?: string;
     } = {
       front: flashcard.front,
       back: flashcard.back,
       partitionId: flashcard.partitionId,
       lastReviewedAt: flashcard.lastReviewedAt,
+      flashcard1Id: flashcard.flashcard1Id,
+      flashcard2Id: flashcard.flashcard2Id,
     };
     await this.prisma.flashcard.upsert({
       where: { id: flashcard.id },

@@ -14,17 +14,21 @@ import { GetNextCardToReviewController } from './features/get-next-card-to-revie
 import { GetNextCardToReview } from './features/get-next-card-to-review/get-next-card-to-review.query';
 import { ListFlashcards } from './features/list-flashcards/list-flashcards.query';
 import { ListFlashcardsController } from './features/list-flashcards/list-flashcard.controller';
+import { CreateConnectedFlashcard } from './features/create-connected-flashcard/create-connected-flashcard.usecase';
+import { CreateConnectedFlashcardController } from './features/create-connected-flashcard/create-connected-flashcard.controller';
 
 @Module({
   imports: [],
   controllers: [
     CreateFlashcardController,
+    CreateConnectedFlashcardController,
     NotifyAnswerController,
     GetNextCardToReviewController,
     ListFlashcardsController,
   ],
   providers: [
     CreateFlashcard,
+    CreateConnectedFlashcard,
     NotifyAnswer,
     GetNextCardToReview,
     ListFlashcards,

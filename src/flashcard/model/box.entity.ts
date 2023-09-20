@@ -33,12 +33,21 @@ export class Box {
     );
   }
 
-  addNewFlashcard(flashcardData: { id: string; front: string; back: string }) {
+  addNewFlashcard(flashcardData: {
+    id: string;
+    front: string;
+    back: string;
+    flashcard1Id?: string;
+    flashcard2Id?: string;
+  }) {
     return new Flashcard(
       flashcardData.id,
       flashcardData.front,
       flashcardData.back,
       this.partitions[0].id,
+      undefined,
+      flashcardData.flashcard1Id,
+      flashcardData.flashcard2Id,
     );
   }
 

@@ -12,6 +12,8 @@ export const flashcardBuilder = ({
   back = 'some concept definition',
   partitionNumber = 1,
   isArchived = false,
+  flashcard1Id = undefined,
+  flashcard2Id = undefined,
   reviewedAt,
 }: {
   box?: Box;
@@ -20,6 +22,8 @@ export const flashcardBuilder = ({
   back?: string;
   partitionNumber?: PartitionNumber;
   isArchived?: boolean;
+  flashcard1Id?: string;
+  flashcard2Id?: string;
   reviewedAt?: Date;
 } = {}) => {
   const props = {
@@ -29,6 +33,8 @@ export const flashcardBuilder = ({
     back,
     partitionNumber,
     isArchived,
+    flashcard1Id,
+    flashcard2Id,
     reviewedAt,
   };
 
@@ -69,6 +75,13 @@ export const flashcardBuilder = ({
         reviewedAt: _reviewedAt,
       });
     },
+    connectedTo(connection: { flashcard1: string; flashcard2: string }) {
+      return flashcardBuilder({
+        ...props,
+        flashcard1Id: connection.flashcard1,
+        flashcard2Id: connection.flashcard2,
+      });
+    },
     build() {
       return new Flashcard(
         props.id,
@@ -78,6 +91,8 @@ export const flashcardBuilder = ({
           ? box.archivedPartition.id
           : box.partitions[props.partitionNumber - 1].id,
         props.reviewedAt,
+        props.flashcard1Id,
+        props.flashcard2Id,
       );
     },
     buildAsReviewableFlashcard(): ReviewableFlashcard {

@@ -3,6 +3,10 @@ import {
   CreateFlashcardCommand,
 } from 'src/flashcard/features/create-flashcard/create-flashcard.usecase';
 import {
+  CreateConnectedFlashcard,
+  CreateConnectedFlashcardCommand,
+} from 'src/flashcard/features/create-connected-flashcard/create-connected-flashcard.usecase';
+import {
   NotifyAnswer,
   NotifyAnswerCommand,
 } from 'src/flashcard/features/notify-answer/notify-answer.usecase';
@@ -28,6 +32,10 @@ export const createFlashcardFixture = ({
     flashcardRepository,
     boxRepository,
   );
+  const createConnectedFlashcard = new CreateConnectedFlashcard(
+    flashcardRepository,
+    boxRepository,
+  );
   return {
     async givenExistingFlashcard(flashcard: Flashcard) {
       await flashcardRepository.save(flashcard);
@@ -49,6 +57,11 @@ export const createFlashcardFixture = ({
       createFlashcardCommand: CreateFlashcardCommand,
     ) {
       return createFlashcard.execute(createFlashcardCommand);
+    },
+    async whenCreatingConnectedFlashcard(
+      createConnectedFlashcardCommand: CreateConnectedFlashcardCommand,
+    ) {
+      return createConnectedFlashcard.execute(createConnectedFlashcardCommand);
     },
 
     async thenFlashcardShouldBe(expectedFlashcard: Flashcard) {

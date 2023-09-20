@@ -44,6 +44,24 @@ describe('PostgresFlashcardRepository', () => {
       testEnv.prismaClient,
     );
     const flashcardId = 'flashcard-id';
+    await flashcardRepository.save(
+      new Flashcard(
+        'flashcard1-id',
+        'some concept',
+        'definition of the concept',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+      ),
+    );
+    await flashcardRepository.save(
+      new Flashcard(
+        'flashcard2-id',
+        'some concept',
+        'definition of the concept',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+      ),
+    );
 
     await flashcardRepository.save(
       new Flashcard(
@@ -52,6 +70,8 @@ describe('PostgresFlashcardRepository', () => {
         'definition of the concept',
         'box-partition-id',
         new Date('2023-10-15T17:10:00.000Z'),
+        'flashcard1-id',
+        'flashcard2-id',
       ),
     );
 
@@ -64,6 +84,8 @@ describe('PostgresFlashcardRepository', () => {
       back: 'definition of the concept',
       partitionId: 'box-partition-id',
       lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
+      flashcard1Id: 'flashcard1-id',
+      flashcard2Id: 'flashcard2-id',
     });
   });
 
@@ -74,20 +96,21 @@ describe('PostgresFlashcardRepository', () => {
     const flashcardId = 'flashcard-id';
     await flashcardRepository.save(
       new Flashcard(
-        flashcardId,
+        'flashcard1-id',
         'some concept',
         'definition of the concept',
         'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
       ),
     );
 
     await flashcardRepository.save(
       new Flashcard(
         flashcardId,
-        'some other concept',
-        'definition of the other concept',
+        'some concept',
+        'definition of concept',
         'box-partition2-id',
-        new Date('2023-10-15T17:10:00.000Z'),
+        new Date('2023-10-16T17:10:00.000Z'),
       ),
     );
 
@@ -96,10 +119,12 @@ describe('PostgresFlashcardRepository', () => {
     });
     expect(expectedFlashcard).toEqual({
       id: flashcardId,
-      front: 'some other concept',
-      back: 'definition of the other concept',
+      front: 'some concept',
+      back: 'definition of concept',
       partitionId: 'box-partition2-id',
-      lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
+      lastReviewedAt: new Date('2023-10-16T17:10:00.000Z'),
+      flashcard1Id: null,
+      flashcard2Id: null,
     });
   });
 
@@ -127,5 +152,55 @@ describe('PostgresFlashcardRepository', () => {
       partitionId: 'box-partition-id',
       lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
     });
+  });
+
+  test('getById() should return a connected flashcard by its id', async () => {
+    const flashcardRepository = new PostgresFlashcardRepository(
+      testEnv.prismaClient,
+    );
+    await flashcardRepository.save(
+      new Flashcard(
+        'flashcard1-id',
+        'some concept',
+        'definition of the concept',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+      ),
+    );
+    await flashcardRepository.save(
+      new Flashcard(
+        'flashcard2-id',
+        'some concept',
+        'definition of the concept',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+      ),
+    );
+    const flashcardId = 'flashcard-id';
+    await flashcardRepository.save(
+      new Flashcard(
+        flashcardId,
+        'some concept',
+        'definition of the concept',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+        'flashcard1-id',
+        'flashcard2-id',
+      ),
+    );
+
+    const expectedFlashcard = await flashcardRepository.getById(flashcardId);
+
+    expect(expectedFlashcard).toEqual(
+      new Flashcard(
+        flashcardId,
+        'some concept',
+        'definition of the concept',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+        'flashcard1-id',
+        'flashcard2-id',
+      ),
+    );
   });
 });

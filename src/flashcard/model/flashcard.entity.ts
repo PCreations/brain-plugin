@@ -5,6 +5,8 @@ export class Flashcard {
     readonly back: string,
     readonly partitionId: string,
     readonly lastReviewedAt?: Date,
+    readonly flashcard1Id?: string,
+    readonly flashcard2Id?: string,
   ) {}
 
   putInPartition(partitionId: string, lastReviewedAt: Date): Flashcard {
@@ -14,6 +16,8 @@ export class Flashcard {
       this.back,
       partitionId,
       lastReviewedAt,
+      this.flashcard1Id,
+      this.flashcard2Id,
     );
   }
 }
