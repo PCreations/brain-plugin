@@ -60,10 +60,12 @@ describe('GetNextCardToReview', () => {
       userId: 'user-id',
     });
     expect(nextCardToReview).toEqual({
-      flashcard: {
-        id: 'flashcard1-id',
-        front: 'front 1',
-        back: 'back 1',
+      data: {
+        flashcard: {
+          id: 'flashcard1-id',
+          front: 'front 1',
+          back: 'back 1',
+        },
       },
     });
   });

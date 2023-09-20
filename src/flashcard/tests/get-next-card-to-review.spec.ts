@@ -39,6 +39,29 @@ describe('Next card to review', () => {
     expect(flashcardsToReview).toEqual(flashcard);
   });
 
+  test('Only one connected card to review that has not been reviewed before', () => {
+    const flashcard = flashcardBuilder()
+      .ofId('flashcard-id')
+      .inPartition(1)
+      .connectedTo({ flashcard1: 'flashcard1-id', flashcard2: 'flashcard2-id' })
+      .buildAsReviewableFlashcard();
+
+    const flashcardsToReview = getTestNextCardToReview({
+      partitions: [flashcard],
+    });
+
+    expect(flashcardsToReview).toEqual(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .inPartition(1)
+        .connectedTo({
+          flashcard1: 'flashcard1-id',
+          flashcard2: 'flashcard2-id',
+        })
+        .buildAsReviewableFlashcard(),
+    );
+  });
+
   test('There is only one card but it has been already reviewed', () => {
     const now = new Date('2023-09-18T12:20:00.000Z');
     const flashcard = flashcardBuilder()

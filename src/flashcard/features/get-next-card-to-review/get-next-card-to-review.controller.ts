@@ -9,7 +9,7 @@ export class GetNextCardToReviewController {
 
   @ApiOperation({
     description:
-      'Retrieve the next card to review. Show ONLY the front of the card, then ask the user to find the back of the card, and only then show the back of the card while telling the user if their answer was incomplete, incorrect, or correct. Ask the user whether they think they answered correctly or not',
+      'Retrieve the next card to review. Show ONLY the front of the card, then ask the user to find the back of the card, and only then show the back of the card while telling the user if their answer was incomplete, incorrect, or correct. If there are connected flashcard, compare the answer to the flashcard back and the connected flashcards back. Ask the user whether they think they answered correctly or not',
   })
   @Get('get-next-card-to-review')
   async getNextCard(@Req() req) {

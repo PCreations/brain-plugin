@@ -2,12 +2,19 @@ import { subDays } from 'date-fns';
 
 export type PartitionNumber = 1 | 2 | 3 | 4 | 5;
 
+type ConnectedFlashcard = {
+  id: string;
+  front: string;
+  back: string;
+};
+
 export type ReviewableFlashcard = {
   id: string;
   front: string;
   back: string;
   lastReviewedAt?: Date;
   partitionNumber: PartitionNumber;
+  connectedFlashcards?: ConnectedFlashcard[];
 };
 
 enum Interval {

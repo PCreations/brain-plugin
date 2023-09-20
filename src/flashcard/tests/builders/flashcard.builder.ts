@@ -102,6 +102,17 @@ export const flashcardBuilder = ({
         back: props.back,
         lastReviewedAt: props.reviewedAt,
         partitionNumber: props.partitionNumber,
+        connectedFlashcards:
+          props.flashcard1Id && props.flashcard2Id
+            ? [
+                flashcardBuilder()
+                  .ofId(props.flashcard1Id)
+                  .buildAsReviewableFlashcard(),
+                flashcardBuilder()
+                  .ofId(props.flashcard2Id)
+                  .buildAsReviewableFlashcard(),
+              ]
+            : undefined,
       };
     },
   };

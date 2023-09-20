@@ -66,12 +66,14 @@ describe('Feature: Getting the next flashcard to review', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual(
       JSON.stringify({
-        flashcard: 'NO_FLASHCARD_TO_REVIEW',
+        data: {
+          flashcard: 'NO_FLASHCARD_TO_REVIEW',
+        },
       }),
     );
   });
 
-  test('/api/flashcard/get-next-card-to-review (GET) : no cards to review', async () => {
+  test('/api/flashcard/get-next-card-to-review (GET)', async () => {
     await flashcardRepository.save(
       flashcardBuilder()
         .ofId('flashcard-id')
@@ -92,12 +94,79 @@ describe('Feature: Getting the next flashcard to review', () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).toEqual(
       JSON.stringify({
-        flashcard: {
-          id: 'flashcard-id',
-          front: 'front',
-          back: 'back',
+        data: {
+          flashcard: {
+            id: 'flashcard-id',
+            front: 'front',
+            back: 'back',
+          },
         },
       }),
     );
+  });
+
+  test.only('/api/flashcard/get-next-card-to-review (GET) : the card to review is a connected cards', async () => {
+    await flashcardRepository.save(
+      flashcardBuilder()
+        .ofId('flashcard1-id')
+        .withContent({ front: 'front1', back: 'back1' })
+        .inPartition(2)
+        .withinBox(userBox)
+        .build(),
+    );
+    await flashcardRepository.save(
+      flashcardBuilder()
+        .ofId('flashcard2-id')
+        .withContent({ front: 'front2', back: 'back2' })
+        .inPartition(2)
+        .withinBox(userBox)
+        .build(),
+    );
+    await flashcardRepository.save(
+      flashcardBuilder()
+        .ofId('flashcard-id')
+        .withContent({
+          front: 'connection 1 & 2',
+          back: 'connection 1 & 2 explanation',
+        })
+        .inPartition(1)
+        .connectedTo({
+          flashcard1: 'flashcard1-id',
+          flashcard2: 'flashcard2-id',
+        })
+        .withinBox(userBox)
+        .build(),
+    );
+
+    const response = await app.inject({
+      method: 'GET',
+      url: '/api/flashcard/get-next-card-to-review',
+      headers: {
+        authorization: `Bearer ${StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID}`,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(JSON.parse(response.body)).toEqual({
+      data: {
+        flashcard: {
+          id: 'flashcard-id',
+          front: 'connection 1 & 2',
+          back: 'connection 1 & 2 explanation',
+        },
+        connectedFlashcards: [
+          {
+            id: 'flashcard1-id',
+            front: 'front1',
+            back: 'back1',
+          },
+          {
+            id: 'flashcard2-id',
+            front: 'front2',
+            back: 'back2',
+          },
+        ],
+      },
+    });
   });
 });

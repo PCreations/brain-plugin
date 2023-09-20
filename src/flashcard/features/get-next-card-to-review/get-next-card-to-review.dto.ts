@@ -11,8 +11,7 @@ export class ReviewableFlashcardDto {
   back: string;
 }
 
-@ApiExtraModels(ReviewableFlashcardDto)
-export class GetNextCardToReviewDto {
+export class GetNextCardToReviewFlashcardResponse {
   @ApiProperty({
     oneOf: [
       {
@@ -24,4 +23,34 @@ export class GetNextCardToReviewDto {
     ],
   })
   flashcard: ReviewableFlashcardDto | 'NO_FLASHCARD_TO_REVIEW';
+}
+
+export class GetNextCardToReviewConnectedFlashcardResponse {
+  @ApiProperty()
+  flashcard: ReviewableFlashcardDto;
+
+  @ApiProperty({
+    type: [ReviewableFlashcardDto],
+  })
+  connectedFlashcards: ReviewableFlashcardDto[];
+}
+
+@ApiExtraModels(
+  GetNextCardToReviewFlashcardResponse,
+  GetNextCardToReviewConnectedFlashcardResponse,
+)
+export class GetNextCardToReviewDto {
+  @ApiProperty({
+    oneOf: [
+      {
+        $ref: getSchemaPath(GetNextCardToReviewFlashcardResponse),
+      },
+      {
+        $ref: getSchemaPath(GetNextCardToReviewConnectedFlashcardResponse),
+      },
+    ],
+  })
+  data:
+    | GetNextCardToReviewFlashcardResponse
+    | GetNextCardToReviewConnectedFlashcardResponse;
 }
