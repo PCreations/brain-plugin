@@ -12,15 +12,23 @@ import { PrismaService } from 'src/flashcard/infra/prisma.service';
 import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
 import { StubAuthenticationGateway } from 'src/auth/stub-authentication.gateway';
 import { Box } from 'src/flashcard/model/box.entity';
+import {
+  WithinPrismaTransaction,
+  createWithinPrismaTransaction,
+} from 'src/flashcard/infra/within-prisma-transaction';
 
 describe('Feature: Getting the next flashcard to review', () => {
   let app: NestFastifyApplication;
   let flashcardRepository: FlashcardRepository;
   let boxRepository: BoxRepository;
   let userBox: Box;
+  let withinPrismaTransaction: WithinPrismaTransaction;
   const testEnv = createTestEnv();
   beforeAll(async () => {
     await testEnv.setUp();
+    withinPrismaTransaction = createWithinPrismaTransaction(
+      testEnv.prismaClient,
+    );
   });
 
   afterAll(async () => {
@@ -47,7 +55,7 @@ describe('Feature: Getting the next flashcard to review', () => {
       'box-id',
       StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID,
     );
-    await boxRepository.save(userBox);
+    await withinPrismaTransaction((trx) => boxRepository.save(userBox)(trx));
   });
 
   afterAll(async () => {
@@ -74,13 +82,15 @@ describe('Feature: Getting the next flashcard to review', () => {
   });
 
   test('/api/flashcard/get-next-card-to-review (GET)', async () => {
-    await flashcardRepository.save(
-      flashcardBuilder()
-        .ofId('flashcard-id')
-        .withContent({ front: 'front', back: 'back' })
-        .inPartition(1)
-        .withinBox(userBox)
-        .build(),
+    await withinPrismaTransaction((trx) =>
+      flashcardRepository.save(
+        flashcardBuilder()
+          .ofId('flashcard-id')
+          .withContent({ front: 'front', back: 'back' })
+          .inPartition(1)
+          .withinBox(userBox)
+          .build(),
+      )(trx),
     );
 
     const response = await app.inject({
@@ -106,37 +116,41 @@ describe('Feature: Getting the next flashcard to review', () => {
   });
 
   test('/api/flashcard/get-next-card-to-review (GET) : the card to review is a connected cards', async () => {
-    await flashcardRepository.save(
-      flashcardBuilder()
-        .ofId('flashcard1-id')
-        .withContent({ front: 'front1', back: 'back1' })
-        .inPartition(2)
-        .withinBox(userBox)
-        .build(),
-    );
-    await flashcardRepository.save(
-      flashcardBuilder()
-        .ofId('flashcard2-id')
-        .withContent({ front: 'front2', back: 'back2' })
-        .inPartition(2)
-        .withinBox(userBox)
-        .build(),
-    );
-    await flashcardRepository.save(
-      flashcardBuilder()
-        .ofId('flashcard-id')
-        .withContent({
-          front: 'connection 1 & 2',
-          back: 'connection 1 & 2 explanation',
-        })
-        .inPartition(1)
-        .connectedTo({
-          flashcard1: 'flashcard1-id',
-          flashcard2: 'flashcard2-id',
-        })
-        .withinBox(userBox)
-        .build(),
-    );
+    await withinPrismaTransaction((trx) => {
+      return Promise.all([
+        flashcardRepository.save(
+          flashcardBuilder()
+            .ofId('flashcard1-id')
+            .withContent({ front: 'front1', back: 'back1' })
+            .inPartition(2)
+            .withinBox(userBox)
+            .build(),
+        )(trx),
+        flashcardRepository.save(
+          flashcardBuilder()
+            .ofId('flashcard2-id')
+            .withContent({ front: 'front2', back: 'back2' })
+            .inPartition(2)
+            .withinBox(userBox)
+            .build(),
+        )(trx),
+        flashcardRepository.save(
+          flashcardBuilder()
+            .ofId('flashcard-id')
+            .withContent({
+              front: 'connection 1 & 2',
+              back: 'connection 1 & 2 explanation',
+            })
+            .inPartition(1)
+            .connectedTo({
+              flashcard1: 'flashcard1-id',
+              flashcard2: 'flashcard2-id',
+            })
+            .withinBox(userBox)
+            .build(),
+        )(trx),
+      ]);
+    });
 
     const response = await app.inject({
       method: 'GET',

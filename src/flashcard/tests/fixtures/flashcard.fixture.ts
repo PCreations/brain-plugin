@@ -15,6 +15,7 @@ import { InMemoryFlashcardRepository } from 'src/flashcard/infra/inmemory-flashc
 import { StubDateProvider } from 'src/flashcard/infra/stub-date-provider';
 import { Box } from 'src/flashcard/model/box.entity';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
+import { createWithinNullTransaction } from 'src/flashcard/model/within-transaction';
 
 export const createFlashcardFixture = ({
   boxRepository,
@@ -27,21 +28,24 @@ export const createFlashcardFixture = ({
     flashcardRepository,
     boxRepository,
     stubDateProvider,
+    createWithinNullTransaction(),
   );
   const createFlashcard = new CreateFlashcard(
     flashcardRepository,
     boxRepository,
+    createWithinNullTransaction(),
   );
   const createConnectedFlashcard = new CreateConnectedFlashcard(
     flashcardRepository,
     boxRepository,
+    createWithinNullTransaction(),
   );
   return {
     async givenExistingFlashcard(flashcard: Flashcard) {
-      await flashcardRepository.save(flashcard);
+      await flashcardRepository.save(flashcard)();
     },
     async givenExistingBox(box: Box) {
-      await boxRepository.save(box);
+      await boxRepository.save(box)();
     },
     givenNowIs(now: Date) {
       stubDateProvider.now = now;
@@ -65,12 +69,14 @@ export const createFlashcardFixture = ({
     },
 
     async thenFlashcardShouldBe(expectedFlashcard: Flashcard) {
-      const flashcard = await flashcardRepository.getById(expectedFlashcard.id);
+      const flashcard = await flashcardRepository.getById(
+        expectedFlashcard.id,
+      )();
 
       expect(flashcard).toEqual(expectedFlashcard);
     },
     async thenBoxShouldBe(expectedBox: Box) {
-      const box = await boxRepository.getById(expectedBox.id);
+      const box = await boxRepository.getById(expectedBox.id)();
 
       expect(box).toEqual(expectedBox);
     },

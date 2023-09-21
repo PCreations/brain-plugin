@@ -12,6 +12,7 @@ import { PrismaService } from 'src/flashcard/infra/prisma.service';
 import { flashcardBuilder } from 'src/flashcard/tests/builders/flashcard.builder';
 import { StubAuthenticationGateway } from 'src/auth/stub-authentication.gateway';
 import { Box } from 'src/flashcard/model/box.entity';
+import { createWithinPrismaTransaction } from 'src/flashcard/infra/within-prisma-transaction';
 
 describe('Feature: Listing all the user flashcards', () => {
   let app: NestFastifyApplication;
@@ -40,6 +41,9 @@ describe('Feature: Listing all the user flashcards', () => {
     app = moduleFixture.createNestApplication<NestFastifyApplication>(
       new FastifyAdapter(),
     );
+    const withinPrismaTransaction = createWithinPrismaTransaction(
+      testEnv.prismaClient,
+    );
     await configureApp(app);
     await app.init();
     await app.getHttpAdapter().getInstance().ready();
@@ -47,24 +51,26 @@ describe('Feature: Listing all the user flashcards', () => {
       'box-id',
       StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID,
     );
-    await boxRepository.save(userBox);
-    const flashcards = [
-      flashcardBuilder()
-        .ofId('flashcard-id-1')
-        .withContent({ front: 'front1', back: 'back1' })
-        .inPartition(1)
-        .withinBox(userBox)
-        .build(),
-      flashcardBuilder()
-        .ofId('flashcard-id-2')
-        .withContent({ front: 'front2', back: 'back2' })
-        .inPartition(2)
-        .withinBox(userBox)
-        .build(),
-    ];
-    await Promise.all(
-      flashcards.map((flashcard) => flashcardRepository.save(flashcard)),
-    );
+    await withinPrismaTransaction(async (trx) => {
+      await boxRepository.save(userBox)(trx);
+      const flashcards = [
+        flashcardBuilder()
+          .ofId('flashcard-id-1')
+          .withContent({ front: 'front1', back: 'back1' })
+          .inPartition(1)
+          .withinBox(userBox)
+          .build(),
+        flashcardBuilder()
+          .ofId('flashcard-id-2')
+          .withContent({ front: 'front2', back: 'back2' })
+          .inPartition(2)
+          .withinBox(userBox)
+          .build(),
+      ];
+      await Promise.all(
+        flashcards.map((flashcard) => flashcardRepository.save(flashcard)(trx)),
+      );
+    });
   });
 
   afterAll(async () => {

@@ -12,6 +12,11 @@ import { PrismaService } from 'src/flashcard/infra/prisma.service';
 import { Box } from 'src/flashcard/model/box.entity';
 import { StubAuthenticationGateway } from 'src/auth/stub-authentication.gateway';
 import { Flashcard } from 'src/flashcard/model/flashcard.entity';
+import {
+  WithinPrismaTransaction,
+  createWithinPrismaTransaction,
+} from 'src/flashcard/infra/within-prisma-transaction';
+import { WithinTransaction } from 'src/flashcard/model/within-transaction';
 
 describe('Feature: Creating a connected flashcard', () => {
   let app: NestFastifyApplication;
@@ -19,20 +24,24 @@ describe('Feature: Creating a connected flashcard', () => {
   let boxRepository: BoxRepository;
   let userBox: Box;
   const testEnv = createTestEnv();
-  beforeAll(async () => {
-    await testEnv.setUp();
-  });
+  let withinPrismaTransaction: WithinPrismaTransaction;
 
   afterAll(async () => {
     await testEnv.tearDown();
   });
 
   beforeAll(async () => {
+    await testEnv.setUp();
+    withinPrismaTransaction = createWithinPrismaTransaction(
+      testEnv.prismaClient,
+    );
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(PrismaService)
       .useValue(testEnv.prismaClient)
+      .overridePipe(WithinTransaction)
+      .useValue(withinPrismaTransaction)
       .compile();
     boxRepository = moduleFixture.get<BoxRepository>(BoxRepository);
     flashcardRepository =
@@ -47,29 +56,34 @@ describe('Feature: Creating a connected flashcard', () => {
       'box-id',
       StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID,
     );
-    await boxRepository.save(userBox);
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard1-id',
-        'some concept',
-        'definition of the concept',
-        userBox.partitions[0].id,
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard2-id',
-        'some concept',
-        'definition of the concept',
-        userBox.partitions[0].id,
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
   });
 
   afterAll(async () => {
     await app.close();
+  });
+
+  beforeEach(async () => {
+    await withinPrismaTransaction(async (trx) => {
+      await boxRepository.save(userBox)(trx);
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard1-id',
+          'some concept',
+          'definition of the concept',
+          userBox.partitions[0].id,
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard2-id',
+          'some concept',
+          'definition of the concept',
+          userBox.partitions[0].id,
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
+    });
   });
 
   test('/api/flashcard/create-connected (POST)', async () => {
@@ -88,7 +102,9 @@ describe('Feature: Creating a connected flashcard', () => {
       },
     });
 
-    const savedFlashcard = await flashcardRepository.getById('flashcard3-id');
+    const savedFlashcard = await withinPrismaTransaction(async (trx) => {
+      return await flashcardRepository.getById('flashcard3-id')(trx);
+    });
 
     expect(response.statusCode).toBe(201);
     expect(savedFlashcard).toEqual({

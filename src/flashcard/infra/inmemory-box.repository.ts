@@ -6,30 +6,36 @@ export class InMemoryBoxRepository implements BoxRepository {
   nextId: string;
   private readonly boxesByUserId = new Map<string, Box>();
 
-  getById(boxId: string): Promise<Box> {
-    const box = this.boxesById.get(boxId);
-    if (box) {
-      return Promise.resolve(box);
-    }
-    throw new Error(`Box with id ${boxId} not found`);
+  getById(boxId: string) {
+    return () => {
+      const box = this.boxesById.get(boxId);
+      if (box) {
+        return Promise.resolve(box);
+      }
+      throw new Error(`Box with id ${boxId} not found`);
+    };
   }
 
-  getByUserId(userId: string): Promise<Box> {
-    const box = this.boxesByUserId.get(userId);
-    if (box) {
-      return Promise.resolve(box);
-    }
-    throw new Error(`Box with user id ${userId} not found`);
+  getByUserId(userId: string) {
+    return () => {
+      const box = this.boxesByUserId.get(userId);
+      if (box) {
+        return Promise.resolve(box);
+      }
+      throw new Error(`Box with user id ${userId} not found`);
+    };
   }
 
   getNextBoxId(): string {
     return this.nextId;
   }
 
-  save(box: Box): Promise<void> {
-    this.boxesById.set(box.id, box);
-    this.boxesByUserId.set(box.userId, box);
+  save(box: Box) {
+    return () => {
+      this.boxesById.set(box.id, box);
+      this.boxesByUserId.set(box.userId, box);
 
-    return Promise.resolve();
+      return Promise.resolve();
+    };
   }
 }

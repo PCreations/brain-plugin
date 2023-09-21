@@ -16,6 +16,8 @@ import { ListFlashcards } from './features/list-flashcards/list-flashcards.query
 import { ListFlashcardsController } from './features/list-flashcards/list-flashcard.controller';
 import { CreateConnectedFlashcard } from './features/create-connected-flashcard/create-connected-flashcard.usecase';
 import { CreateConnectedFlashcardController } from './features/create-connected-flashcard/create-connected-flashcard.controller';
+import { WithinTransaction } from './model/within-transaction';
+import { createWithinPrismaTransaction } from './infra/within-prisma-transaction';
 
 @Module({
   imports: [],
@@ -33,6 +35,13 @@ import { CreateConnectedFlashcardController } from './features/create-connected-
     GetNextCardToReview,
     ListFlashcards,
     PrismaService,
+    {
+      provide: WithinTransaction,
+      useFactory(prismaService: PrismaService) {
+        return createWithinPrismaTransaction(prismaService);
+      },
+      inject: [PrismaService],
+    },
     {
       provide: FlashcardRepository,
       useClass: PostgresFlashcardRepository,

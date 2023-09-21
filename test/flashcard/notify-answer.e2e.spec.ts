@@ -14,6 +14,11 @@ import {
   FastifyAdapter,
   NestFastifyApplication,
 } from '@nestjs/platform-fastify';
+import {
+  WithinPrismaTransaction,
+  createWithinPrismaTransaction,
+} from 'src/flashcard/infra/within-prisma-transaction';
+import { WithinTransaction } from 'src/flashcard/model/within-transaction';
 
 describe('Feature: Notifying a good answer to a flashcard', () => {
   const today = new Date('2023-09-15T17:45:00.000Z');
@@ -24,20 +29,24 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
   const stubDateProvider = new StubDateProvider();
   stubDateProvider.now = today;
   const testEnv = createTestEnv();
-  beforeAll(async () => {
-    await testEnv.setUp();
-  });
+  let withinPrismaTransaction: WithinPrismaTransaction;
 
   afterAll(async () => {
     await testEnv.tearDown();
   });
 
-  beforeEach(async () => {
+  beforeAll(async () => {
+    await testEnv.setUp();
+    withinPrismaTransaction = createWithinPrismaTransaction(
+      testEnv.prismaClient,
+    );
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(PrismaService)
       .useValue(testEnv.prismaClient)
+      .overridePipe(WithinTransaction)
+      .useValue(withinPrismaTransaction)
       .overrideProvider(DateProvider)
       .useValue(stubDateProvider)
       .compile();
@@ -53,19 +62,21 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
       'box-id',
       StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID,
     );
-    await boxRepository.save(userBox);
+    await withinPrismaTransaction((trx) => boxRepository.save(userBox)(trx));
   });
 
   afterAll(() => app.close());
 
   describe('Example: The flashcard is in the first partition', () => {
     test('/api/flashcard/notify-answer (PUT) - the correct answer is given thus the flashcard should be in the second partition', async () => {
-      await flashcardRepository.save(
-        flashcardBuilder()
-          .ofId('flashcard-id')
-          .inPartition(1)
-          .withinBox(userBox)
-          .build(),
+      await withinPrismaTransaction((trx) =>
+        flashcardRepository.save(
+          flashcardBuilder()
+            .ofId('flashcard-id')
+            .inPartition(1)
+            .withinBox(userBox)
+            .build(),
+        )(trx),
       );
 
       await app.inject({
@@ -80,7 +91,9 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
         },
       });
 
-      const editedFlashcard = await flashcardRepository.getById('flashcard-id');
+      const editedFlashcard = await withinPrismaTransaction((trx) =>
+        flashcardRepository.getById('flashcard-id')(trx),
+      );
       expect(editedFlashcard.partitionId).toEqual(userBox.partitions[1].id);
       expect(editedFlashcard.lastReviewedAt).toEqual(today);
     });
@@ -88,12 +101,14 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
 
   describe('Example: The flashcard is in the second partition', () => {
     test('/api/flashcard/notify-answer (PUT) - the wrong answer is given thus the flashcard should be in the first partition', async () => {
-      await flashcardRepository.save(
-        flashcardBuilder()
-          .ofId('flashcard-id')
-          .inPartition(2)
-          .withinBox(userBox)
-          .build(),
+      await withinPrismaTransaction((trx) =>
+        flashcardRepository.save(
+          flashcardBuilder()
+            .ofId('flashcard-id')
+            .inPartition(2)
+            .withinBox(userBox)
+            .build(),
+        )(trx),
       );
 
       await app.inject({
@@ -108,7 +123,9 @@ describe('Feature: Notifying a good answer to a flashcard', () => {
         },
       });
 
-      const editedFlashcard = await flashcardRepository.getById('flashcard-id');
+      const editedFlashcard = await withinPrismaTransaction((trx) =>
+        flashcardRepository.getById('flashcard-id')(trx),
+      );
       expect(editedFlashcard.partitionId).toEqual(userBox.partitions[0].id);
     });
   });

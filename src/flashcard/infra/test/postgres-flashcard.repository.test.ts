@@ -40,202 +40,204 @@ describe('PostgresFlashcardRepository', () => {
   });
 
   test('save() should save a new flashcard', async () => {
-    const flashcardRepository = new PostgresFlashcardRepository(
-      testEnv.prismaClient,
-    );
+    const flashcardRepository = new PostgresFlashcardRepository();
     const flashcardId = 'flashcard-id';
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard1-id',
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard2-id',
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
+    await testEnv.prismaClient.$transaction(async (trx) => {
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard1-id',
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard2-id',
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
 
-    await flashcardRepository.save(
-      new Flashcard(
-        flashcardId,
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-        'flashcard1-id',
-        'flashcard2-id',
-      ),
-    );
+      await flashcardRepository.save(
+        new Flashcard(
+          flashcardId,
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+          'flashcard1-id',
+          'flashcard2-id',
+        ),
+      )(trx);
 
-    const expectedFlashcard = await testEnv.prismaClient.flashcard.findUnique({
-      where: { id: flashcardId },
-      select: {
-        id: true,
-        front: true,
-        back: true,
-        partitionId: true,
-        lastReviewedAt: true,
-        connectedTo: {
-          select: {
-            id: true,
+      const expectedFlashcard = await trx.flashcard.findUnique({
+        where: { id: flashcardId },
+        select: {
+          id: true,
+          front: true,
+          back: true,
+          partitionId: true,
+          lastReviewedAt: true,
+          connectedTo: {
+            select: {
+              id: true,
+            },
           },
         },
-      },
-    });
-    expect(expectedFlashcard).toEqual({
-      id: flashcardId,
-      front: 'some concept',
-      back: 'definition of the concept',
-      partitionId: 'box-partition-id',
-      lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
-      connectedTo: [
-        {
-          id: 'flashcard1-id',
-        },
-        {
-          id: 'flashcard2-id',
-        },
-      ],
+      });
+      expect(expectedFlashcard).toEqual({
+        id: flashcardId,
+        front: 'some concept',
+        back: 'definition of the concept',
+        partitionId: 'box-partition-id',
+        lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
+        connectedTo: [
+          {
+            id: 'flashcard1-id',
+          },
+          {
+            id: 'flashcard2-id',
+          },
+        ],
+      });
     });
   });
 
   test('save() should update an existing flashcard', async () => {
-    const flashcardRepository = new PostgresFlashcardRepository(
-      testEnv.prismaClient,
-    );
+    const flashcardRepository = new PostgresFlashcardRepository();
     const flashcardId = 'flashcard-id';
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard1-id',
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
+    await testEnv.prismaClient.$transaction(async (trx) => {
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard1-id',
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
 
-    await flashcardRepository.save(
-      new Flashcard(
-        flashcardId,
-        'some concept',
-        'definition of concept',
-        'box-partition2-id',
-        new Date('2023-10-16T17:10:00.000Z'),
-      ),
-    );
+      await flashcardRepository.save(
+        new Flashcard(
+          flashcardId,
+          'some concept',
+          'definition of concept',
+          'box-partition2-id',
+          new Date('2023-10-16T17:10:00.000Z'),
+        ),
+      )(trx);
 
-    const expectedFlashcard = await testEnv.prismaClient.flashcard.findUnique({
-      where: { id: flashcardId },
-    });
-    expect(expectedFlashcard).toEqual({
-      id: flashcardId,
-      front: 'some concept',
-      back: 'definition of concept',
-      partitionId: 'box-partition2-id',
-      lastReviewedAt: new Date('2023-10-16T17:10:00.000Z'),
+      const expectedFlashcard = await trx.flashcard.findUnique({
+        where: { id: flashcardId },
+      });
+      expect(expectedFlashcard).toEqual({
+        id: flashcardId,
+        front: 'some concept',
+        back: 'definition of concept',
+        partitionId: 'box-partition2-id',
+        lastReviewedAt: new Date('2023-10-16T17:10:00.000Z'),
+      });
     });
   });
 
   test('getById() should return a flashcard by its id', async () => {
-    const flashcardRepository = new PostgresFlashcardRepository(
-      testEnv.prismaClient,
-    );
+    const flashcardRepository = new PostgresFlashcardRepository();
     const flashcardId = 'flashcard-id';
-    await flashcardRepository.save(
-      new Flashcard(
-        flashcardId,
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
+    await testEnv.prismaClient.$transaction(async (trx) => {
+      await flashcardRepository.save(
+        new Flashcard(
+          flashcardId,
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
 
-    const expectedFlashcard = await flashcardRepository.getById(flashcardId);
+      const expectedFlashcard =
+        await flashcardRepository.getById(flashcardId)(trx);
 
-    expect(expectedFlashcard).toEqual({
-      id: flashcardId,
-      front: 'some concept',
-      back: 'definition of the concept',
-      partitionId: 'box-partition-id',
-      lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
+      expect(expectedFlashcard).toEqual({
+        id: flashcardId,
+        front: 'some concept',
+        back: 'definition of the concept',
+        partitionId: 'box-partition-id',
+        lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
+      });
     });
   });
 
   test('getById() should return a connected flashcard by its id', async () => {
-    const flashcardRepository = new PostgresFlashcardRepository(
-      testEnv.prismaClient,
-    );
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard1-id',
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard2-id',
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard3-id',
-        'some concept 3',
-        'definition of the concept 3',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
-    await flashcardRepository.save(
-      new Flashcard(
-        'flashcard4-id',
-        'connection between flashcard1 and flashcard3',
-        'Explanation of the connection between flashcard1 and flashcard3',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-      ),
-    );
+    const flashcardRepository = new PostgresFlashcardRepository();
+    await testEnv.prismaClient.$transaction(async (trx) => {
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard1-id',
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard2-id',
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard3-id',
+          'some concept 3',
+          'definition of the concept 3',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
+      await flashcardRepository.save(
+        new Flashcard(
+          'flashcard4-id',
+          'connection between flashcard1 and flashcard3',
+          'Explanation of the connection between flashcard1 and flashcard3',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+        ),
+      )(trx);
 
-    const flashcardId = 'flashcard-id';
-    await flashcardRepository.save(
-      new Flashcard(
-        flashcardId,
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-        'flashcard1-id',
-        'flashcard2-id',
-      ),
-    );
+      const flashcardId = 'flashcard-id';
+      await flashcardRepository.save(
+        new Flashcard(
+          flashcardId,
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+          'flashcard1-id',
+          'flashcard2-id',
+        ),
+      )(trx);
 
-    const expectedFlashcard = await flashcardRepository.getById(flashcardId);
+      const expectedFlashcard =
+        await flashcardRepository.getById(flashcardId)(trx);
 
-    expect(expectedFlashcard).toEqual(
-      new Flashcard(
-        flashcardId,
-        'some concept',
-        'definition of the concept',
-        'box-partition-id',
-        new Date('2023-10-15T17:10:00.000Z'),
-        'flashcard1-id',
-        'flashcard2-id',
-      ),
-    );
+      expect(expectedFlashcard).toEqual(
+        new Flashcard(
+          flashcardId,
+          'some concept',
+          'definition of the concept',
+          'box-partition-id',
+          new Date('2023-10-15T17:10:00.000Z'),
+          'flashcard1-id',
+          'flashcard2-id',
+        ),
+      );
+    });
   });
 });

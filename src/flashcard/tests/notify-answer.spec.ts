@@ -13,7 +13,7 @@ describe('Feature: notifying an answer to a flashcard', () => {
   const boxRepository = new InMemoryBoxRepository();
 
   beforeAll(async () => {
-    await boxRepository.save(box);
+    await boxRepository.save(box)();
   });
 
   beforeEach(() => {

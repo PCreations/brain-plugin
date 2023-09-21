@@ -11,6 +11,11 @@ import { createTestEnv } from '../../src/test.env';
 import { PrismaService } from 'src/flashcard/infra/prisma.service';
 import { Box } from 'src/flashcard/model/box.entity';
 import { StubAuthenticationGateway } from 'src/auth/stub-authentication.gateway';
+import {
+  WithinPrismaTransaction,
+  createWithinPrismaTransaction,
+} from 'src/flashcard/infra/within-prisma-transaction';
+import { WithinTransaction } from 'src/flashcard/model/within-transaction';
 
 describe('Feature: Creating a flashcard', () => {
   let app: NestFastifyApplication;
@@ -18,20 +23,24 @@ describe('Feature: Creating a flashcard', () => {
   let boxRepository: BoxRepository;
   let userBox: Box;
   const testEnv = createTestEnv();
-  beforeAll(async () => {
-    await testEnv.setUp();
-  });
+  let withinPrismaTransaction: WithinPrismaTransaction;
 
   afterAll(async () => {
     await testEnv.tearDown();
   });
 
   beforeAll(async () => {
+    await testEnv.setUp();
+    withinPrismaTransaction = createWithinPrismaTransaction(
+      testEnv.prismaClient,
+    );
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(PrismaService)
       .useValue(testEnv.prismaClient)
+      .overridePipe(WithinTransaction)
+      .useValue(withinPrismaTransaction)
       .compile();
     boxRepository = moduleFixture.get<BoxRepository>(BoxRepository);
     flashcardRepository =
@@ -46,7 +55,7 @@ describe('Feature: Creating a flashcard', () => {
       'box-id',
       StubAuthenticationGateway.BOB_TEST_TOKEN_AND_UID,
     );
-    await boxRepository.save(userBox);
+    await withinPrismaTransaction((trx) => boxRepository.save(userBox)(trx));
   });
 
   afterAll(async () => {
@@ -67,7 +76,9 @@ describe('Feature: Creating a flashcard', () => {
       },
     });
 
-    const savedFlashcard = await flashcardRepository.getById('flashcard-id');
+    const savedFlashcard = await withinPrismaTransaction((trx) =>
+      flashcardRepository.getById('flashcard-id')(trx),
+    );
 
     expect(response.statusCode).toBe(201);
     expect(savedFlashcard).toEqual({
