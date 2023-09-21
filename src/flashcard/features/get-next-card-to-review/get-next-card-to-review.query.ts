@@ -35,14 +35,8 @@ export class GetNextCardToReview {
                 back: true,
                 partitionId: true,
                 lastReviewedAt: true,
-                flashcard1: {
-                  select: {
-                    id: true,
-                    front: true,
-                    back: true,
-                  },
-                },
-                flashcard2: {
+                connectedTo: {
+                  take: 2,
                   select: {
                     id: true,
                     front: true,
@@ -62,22 +56,7 @@ export class GetNextCardToReview {
 
     const queryFlashcardToReviewableFlashcard =
       (partitionNumber: PartitionNumber) =>
-      (flashcard: {
-        id: string;
-        front: string;
-        back: string;
-        lastReviewedAt?: Date;
-        flashcard1?: {
-          id: string;
-          front: string;
-          back: string;
-        };
-        flashcard2?: {
-          id: string;
-          front: string;
-          back: string;
-        };
-      }) => {
+      (flashcard: (typeof result)['Partition'][0]['flashcards'][0]) => {
         const reviewableFlashcard: ReviewableFlashcard = {
           id: flashcard.id,
           front: flashcard.front,
@@ -85,9 +64,8 @@ export class GetNextCardToReview {
           lastReviewedAt: flashcard.lastReviewedAt ?? undefined,
           partitionNumber,
           connectedFlashcards:
-            flashcard.flashcard1 != undefined &&
-            flashcard.flashcard2 != undefined
-              ? [flashcard.flashcard1, flashcard.flashcard2]
+            flashcard.connectedTo.length > 0
+              ? [flashcard.connectedTo[0], flashcard.connectedTo[1]]
               : undefined,
         };
         if (reviewableFlashcard.connectedFlashcards === undefined) {

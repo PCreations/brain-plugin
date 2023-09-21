@@ -10,6 +10,18 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
   async getById(flashcardId: string): Promise<Flashcard> {
     const flashcard = await this.prisma.flashcard.findUnique({
       where: { id: flashcardId },
+      select: {
+        id: true,
+        front: true,
+        back: true,
+        partitionId: true,
+        lastReviewedAt: true,
+        connectedTo: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
     return new Flashcard(
@@ -18,8 +30,8 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
       flashcard.back,
       flashcard.partitionId,
       flashcard.lastReviewedAt ?? undefined,
-      flashcard.flashcard1Id ?? undefined,
-      flashcard.flashcard2Id ?? undefined,
+      flashcard.connectedTo[0]?.id ?? undefined,
+      flashcard.connectedTo[1]?.id ?? undefined,
     );
   }
 
@@ -29,15 +41,26 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
       back: string;
       partitionId: string;
       lastReviewedAt?: Date;
-      flashcard1Id?: string;
-      flashcard2Id?: string;
+      connectedTo?: {
+        connect: {
+          id: string;
+        }[];
+      };
     } = {
       front: flashcard.front,
       back: flashcard.back,
       partitionId: flashcard.partitionId,
       lastReviewedAt: flashcard.lastReviewedAt,
-      flashcard1Id: flashcard.flashcard1Id,
-      flashcard2Id: flashcard.flashcard2Id,
+      ...(flashcard.flashcard1Id && flashcard.flashcard2Id
+        ? {
+            connectedTo: {
+              connect: [
+                { id: flashcard.flashcard1Id },
+                { id: flashcard.flashcard2Id },
+              ],
+            },
+          }
+        : {}),
     };
     await this.prisma.flashcard.upsert({
       where: { id: flashcard.id },

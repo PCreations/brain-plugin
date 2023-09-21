@@ -77,6 +77,18 @@ describe('PostgresFlashcardRepository', () => {
 
     const expectedFlashcard = await testEnv.prismaClient.flashcard.findUnique({
       where: { id: flashcardId },
+      select: {
+        id: true,
+        front: true,
+        back: true,
+        partitionId: true,
+        lastReviewedAt: true,
+        connectedTo: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
     expect(expectedFlashcard).toEqual({
       id: flashcardId,
@@ -84,8 +96,14 @@ describe('PostgresFlashcardRepository', () => {
       back: 'definition of the concept',
       partitionId: 'box-partition-id',
       lastReviewedAt: new Date('2023-10-15T17:10:00.000Z'),
-      flashcard1Id: 'flashcard1-id',
-      flashcard2Id: 'flashcard2-id',
+      connectedTo: [
+        {
+          id: 'flashcard1-id',
+        },
+        {
+          id: 'flashcard2-id',
+        },
+      ],
     });
   });
 
@@ -123,8 +141,6 @@ describe('PostgresFlashcardRepository', () => {
       back: 'definition of concept',
       partitionId: 'box-partition2-id',
       lastReviewedAt: new Date('2023-10-16T17:10:00.000Z'),
-      flashcard1Id: null,
-      flashcard2Id: null,
     });
   });
 
@@ -176,6 +192,25 @@ describe('PostgresFlashcardRepository', () => {
         new Date('2023-10-15T17:10:00.000Z'),
       ),
     );
+    await flashcardRepository.save(
+      new Flashcard(
+        'flashcard3-id',
+        'some concept 3',
+        'definition of the concept 3',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+      ),
+    );
+    await flashcardRepository.save(
+      new Flashcard(
+        'flashcard4-id',
+        'connection between flashcard1 and flashcard3',
+        'Explanation of the connection between flashcard1 and flashcard3',
+        'box-partition-id',
+        new Date('2023-10-15T17:10:00.000Z'),
+      ),
+    );
+
     const flashcardId = 'flashcard-id';
     await flashcardRepository.save(
       new Flashcard(

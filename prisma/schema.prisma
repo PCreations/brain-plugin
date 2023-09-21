@@ -8,18 +8,14 @@ datasource db {
 }
 
 model Flashcard {
-  id                  String     @id
-  front               String
-  back                String
-  Partition           Partition  @relation(fields: [partitionId], references: [id])
-  partitionId         String
-  lastReviewedAt      DateTime?
-  flashcard1          Flashcard? @relation("Flashcard1", fields: [flashcard1Id], references: [id])
-  flashcard1Id        String?    @unique
-  connectedFlashcard1 Flashcard? @relation("Flashcard1")
-  flashcard2          Flashcard? @relation("Flashcard2", fields: [flashcard2Id], references: [id])
-  flashcard2Id        String?    @unique
-  connectedFlashcard2 Flashcard? @relation("Flashcard2")
+  id             String      @id
+  front          String
+  back           String
+  Partition      Partition   @relation(fields: [partitionId], references: [id])
+  partitionId    String
+  lastReviewedAt DateTime?
+  connectedTo    Flashcard[] @relation("FlashcardConnectedTo")
+  connecting     Flashcard[] @relation("FlashcardConnectedTo")
 }
 
 model Partition {

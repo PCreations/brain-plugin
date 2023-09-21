@@ -105,7 +105,7 @@ describe('Feature: Getting the next flashcard to review', () => {
     );
   });
 
-  test.only('/api/flashcard/get-next-card-to-review (GET) : the card to review is a connected cards', async () => {
+  test('/api/flashcard/get-next-card-to-review (GET) : the card to review is a connected cards', async () => {
     await flashcardRepository.save(
       flashcardBuilder()
         .ofId('flashcard1-id')
