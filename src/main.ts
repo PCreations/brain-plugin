@@ -18,6 +18,7 @@ async function bootstrap() {
     .setDescription('Create flashcards and review them with spaced-repition.')
     .setVersion('1.0')
     .addBearerAuth()
+    .addServer(process.env.SERVER_URL)
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document, {
