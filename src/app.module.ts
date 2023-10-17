@@ -6,6 +6,7 @@ import { HealthCheckModule } from './healthcheck/healthcheck.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/auth.guard';
 import { AuthModule } from './auth/auth.module';
+import { AgentLabsModule } from './agentlabs/agentlabs.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     FlashcardModule,
     HealthCheckModule,
+    AgentLabsModule,
   ],
   controllers: [AppController],
   providers: [
