@@ -61,8 +61,11 @@ export class AgentLabsProject implements OnModuleInit, OnApplicationShutdown {
     ];
     const agent = await initializeAgentExecutorWithOptions(
       tools,
-      new ChatOpenAI({ temperature: 0, modelName: 'gpt-4' }),
-      { agentType: 'chat-zero-shot-react-description', verbose: true },
+      new ChatOpenAI({ temperature: 0.2, modelName: 'gpt-4' }),
+      {
+        agentType: 'chat-conversational-react-description',
+        verbose: true,
+      },
     );
 
     const result = await agent.call({
