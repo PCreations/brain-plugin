@@ -12,6 +12,21 @@ import {
   AIPluginTool,
 } from 'langchain/tools';
 import { ConfigService } from '@nestjs/config';
+import { setTimeout as asyncSetTimeout } from 'timers/promises';
+
+const exponentialBackoff = async (fn: () => Promise<void>) => {
+  let retries = 0;
+  while (retries < 5) {
+    try {
+      await fn();
+      break;
+    } catch (error) {
+      retries++;
+      console.log(`Error, retrying in ${2 ** retries * 1000}ms`, error);
+      await asyncSetTimeout(2 ** retries * 1000);
+    }
+  }
+};
 
 @Injectable()
 export class AgentLabsProject implements OnModuleInit, OnApplicationShutdown {
@@ -40,7 +55,7 @@ export class AgentLabsProject implements OnModuleInit, OnApplicationShutdown {
         conversationId: message.conversationId,
       });
     });
-    await this.project.connect();
+    await exponentialBackoff(() => this.project.connect());
   }
 
   private async runPlugin(prompt: string) {
