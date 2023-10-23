@@ -3,7 +3,7 @@ import { BoxRepository } from '../model/box.repository';
 
 export class InMemoryBoxRepository implements BoxRepository {
   private readonly boxesById = new Map<string, Box>();
-  nextId: string;
+  nextId!: string;
   private readonly boxesByUserId = new Map<string, Box>();
 
   getById(boxId: string) {

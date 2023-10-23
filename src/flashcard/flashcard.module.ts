@@ -55,6 +55,13 @@ import { createWithinPrismaTransaction } from './infra/within-prisma-transaction
       useClass: RealDateProvider,
     },
   ],
-  exports: [PrismaService],
+  exports: [
+    PrismaService,
+    GetNextCardToReview,
+    NotifyAnswer,
+    CreateFlashcard,
+    CreateConnectedFlashcard,
+    ListFlashcards,
+  ],
 })
 export class FlashcardModule {}

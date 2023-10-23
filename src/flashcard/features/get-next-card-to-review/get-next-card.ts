@@ -45,7 +45,7 @@ const shouldCardBeReviewed =
 
     return (
       subDays(now, reviewIntervalByPartition[flashcard.partitionNumber]) >=
-      flashcard.lastReviewedAt
+      flashcard.lastReviewedAt!
     );
   };
 

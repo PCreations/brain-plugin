@@ -25,6 +25,10 @@ export class PostgresFlashcardRepository implements FlashcardRepository {
         },
       });
 
+      if (!flashcard) {
+        throw new Error('Flashcard not found');
+      }
+
       return new Flashcard(
         flashcard.id,
         flashcard.front,

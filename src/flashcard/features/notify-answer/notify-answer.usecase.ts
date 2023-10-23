@@ -5,9 +5,9 @@ import { FlashcardRepository } from 'src/flashcard/model/flashcard.repository';
 import { WithinTransaction } from 'src/flashcard/model/within-transaction';
 
 export class NotifyAnswerCommand {
-  flashcardId: string;
-  isCorrect: boolean;
-  userId: string;
+  flashcardId!: string;
+  isCorrect!: boolean;
+  userId!: string;
 }
 
 @Injectable()
