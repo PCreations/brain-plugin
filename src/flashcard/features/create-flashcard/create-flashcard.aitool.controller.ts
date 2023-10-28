@@ -6,6 +6,7 @@ const inputSchema = z.object({
   front: z.string(),
   back: z.string(),
   id: z.string(),
+  draft: z.boolean(),
 });
 
 type InputSchema = z.infer<typeof inputSchema>;
@@ -21,7 +22,7 @@ export class CreateFlashcardAiToolController extends Tool {
 
   name = 'CreateFlashcard';
   description =
-    'Usefull when the user wants to create a flashcard composed of a front representing a concept, and a back containing the definition of this concept. The input to this tool should be a json string containing a "front" string, and "back" string and an "id" uuid. You MUST preview the flashcard to the user before creating it.';
+    'Usefull when the user wants to create a flashcard composed of a front representing a concept, and a back containing the definition of this concept. The input to this tool should be a json string containing a "front" string, and "back" string and an "id" uuid. You MUST preview the flashcard to the user before creating it, thus the "draft" boolean in the input.';
 
   constructor(
     private readonly createFlashcard: CreateFlashcard,
@@ -32,7 +33,14 @@ export class CreateFlashcardAiToolController extends Tool {
 
   protected async _call(input: string): Promise<string> {
     const parsedInput: InputSchema = inputSchema.parse(JSON.parse(input));
-
+    if (parsedInput.draft) {
+      return JSON.stringify({
+        front: parsedInput.front,
+        back: parsedInput.back,
+        id: parsedInput.id,
+        userId: this.userId,
+      });
+    }
     await this.createFlashcard.execute({
       front: parsedInput.front,
       back: parsedInput.back,

@@ -48,6 +48,9 @@ const uuidGeneratorTool = new DynamicStructuredTool({
   returnDirect: false,
 });
 
+// @TODO: do this in the proper way
+const usersOnboarded = new Set<string>();
+
 @Injectable()
 export class AgentLabsProject
   implements OnApplicationBootstrap, OnApplicationShutdown
@@ -86,8 +89,49 @@ export class AgentLabsProject
     await this.project?.disconnect();
   }
 
+  private async getOnboarding(userId: string) {
+    const result = await this.runPlugin({
+      text: "Salut ! On va se tutoyer et se parler de façon amicale et parfois un peu taquine. Explique-moi comment je peux interagir avec toi afin de m'aider à réviser mes connaissances sans répondre explicitement à mon message de salutation.",
+      userId,
+    });
+    this.memory.saveContext(
+      {
+        input:
+          "Salut ! On va se tutoyer et se parler de façon amicale et parfois un peu taquin. Explique-moi comment je peux interagir avec toi afin de m'aider à réviser mes connaissances sans répondre explicitement à mon message de salutation.",
+      },
+      {
+        output: result.output,
+      },
+    );
+    return result.output;
+  }
+
   async onApplicationBootstrap() {
     this.project?.onChatMessage(async (message) => {
+      if (message.member.isAnonymous) {
+        if (!usersOnboarded.has(message.memberId)) {
+          usersOnboarded.add(message.memberId);
+          const onboarding = await this.getOnboarding(message.memberId);
+
+          await this.agent.send(
+            {
+              text: onboarding,
+              conversationId: message.conversationId,
+            },
+            {
+              format: 'Markdown',
+            },
+          );
+        }
+        return this.agent.requestLogin({
+          conversationId: message.conversationId,
+          text: "Juste avant que je puisse t'aider, merci de te connecter à BrAIn :)",
+        });
+      }
+      if (!usersOnboarded.has(message.memberId)) {
+        usersOnboarded.add(message.memberId);
+        await this.getOnboarding(message.memberId);
+      }
       const result = await this.runPlugin({
         text: message.text,
         userId: message.memberId,
@@ -106,10 +150,10 @@ export class AgentLabsProject
   }
 
   private createChatOpenAI() {
-    const prefix = `You are a friendly AI assistant specialized in helping the authenticated user reviewing their knowledge through flashcards. When the user wants to review their flashcard, you should retrieve their next flashcard to review, then you should ONLY display the front of the card, and DEFINITELY NOT the back which contains the answer. You MUST wait for the user to provide their answer before offering to show them the back of the card. When the user has given their answer, you MUST ask them if they think they have correctly answered so you can notify the system about the user having given a correct answer or not. If the user wants to create a new flaschard, they must provide a front and a back for the card, the front must be concise, representing only a concept, the back should explain this concept in a few sentences only. Before creating the flashcard, you should ask the user if the generated flashcard suits their need. If the user says that the flashcard is good for them, then you can really create the flashcard. You can also use all the flashcards to suggest some connections between flashcards, and ask the user to confirm or deny these connections before saving the connected flashcards`;
+    const prefix = `You are a friendly AI assistant specialized in helping the authenticated user reviewing their knowledge through flashcards. When the user wants to review their flashcard, you should retrieve their next flashcard to review, then you should ONLY display the front of the card, and DEFINITELY NOT the back which contains the answer. You MUST wait for the user to provide their answer before offering to show them the back of the card. When the user has given their answer, you MUST ask them if they think they have correctly answered so you can notify the system about the user having given a correct answer or not. You MUST get the next flashcard to review after having notified the system. If the user wants to create a new flaschard, they must provide a front and a back for the card, the front must be concise, representing only a concept, the back should explain this concept in a few sentences only. Before creating the flashcard, you should ask the user if the generated flashcard suits their need. If the user says that the flashcard is good for them, then you can really create the flashcard. You can also use all the flashcards to suggest some connections between flashcards, and ask the user to confirm or deny these connections before saving the connected flashcards`;
 
     return new ChatOpenAI({
-      temperature: 0,
+      temperature: 0.5,
       modelName: 'gpt-4',
       prefixMessages: [
         {

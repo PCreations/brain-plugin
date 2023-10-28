@@ -20,7 +20,7 @@ export class NotifyAnswerAiToolController extends Tool {
 
   name = 'NotifyAnswer';
   description =
-    'Usefull when the user have just answered a flashcard to notify the system that they correctly answered or not so the flashcard can be moved in appropriate partition in the box. input should be a json string containing the "flashcardId" string, and "isCorrect" boolean';
+    'Usefull when the user have just answered a flashcard to notify the system that they correctly answered or not so the flashcard can be moved in appropriate partition in the box. input should be a json string containing the "flashcardId" string, and "isCorrect" boolean. After notifying the answer, you should retrieve the next flashcard to review.';
 
   constructor(
     private readonly notifyAnswer: NotifyAnswer,
