@@ -6,8 +6,8 @@ import {
 } from '@nestjs/common';
 import { ChatOpenAI } from 'langchain/chat_models/openai';
 import { initializeAgentExecutorWithOptions } from 'langchain/agents';
-import { ChatMessageHistory } from 'langchain/memory';
 import { BufferMemory } from 'langchain/memory';
+import { RedisChatMessageHistory } from 'langchain/stores/message/ioredis';
 import { DynamicStructuredTool } from 'langchain/tools';
 import { v4 as uuidv4 } from 'uuid';
 import { ConfigService } from '@nestjs/config';
@@ -57,12 +57,12 @@ export class AgentLabsProject
 {
   private readonly project!: Project;
   private readonly agent!: ReturnType<Project['agent']>;
-  private readonly chatHistory = new ChatMessageHistory();
-  private readonly memory!: BufferMemory;
+  private readonly chatHistory: RedisChatMessageHistory;
+  private memory!: BufferMemory;
   private readonly chatOpenAI!: ChatOpenAI;
 
   constructor(
-    configService: ConfigService,
+    private readonly configService: ConfigService,
     private readonly getNextCardToReview: GetNextCardToReview,
     private readonly notifyAnswer: NotifyAnswer,
     private readonly createFlashcard: CreateFlashcard,
@@ -70,11 +70,6 @@ export class AgentLabsProject
     private readonly createConnectedFlashcard: CreateConnectedFlashcard,
   ) {
     if (configService.get('DISABLE_AGENTLABS') === undefined) {
-      this.memory = new BufferMemory({
-        chatHistory: this.chatHistory,
-        returnMessages: true,
-        memoryKey: 'chat_history',
-      });
       this.chatOpenAI = this.createChatOpenAI();
       this.project = new Project({
         projectId: '4f2bdf9d-0d14-4d2b-9397-074e0efdd776',
@@ -89,10 +84,11 @@ export class AgentLabsProject
     await this.project?.disconnect();
   }
 
-  private async getOnboarding(userId: string) {
+  private async getOnboarding(userId: string, conversationId: string) {
     const result = await this.runPlugin({
       text: "Salut ! On va se tutoyer et se parler de façon amicale et parfois un peu taquine. Explique-moi comment je peux interagir avec toi afin de m'aider à réviser mes connaissances sans répondre explicitement à mon message de salutation.",
       userId,
+      conversationId,
     });
     this.memory.saveContext(
       {
@@ -111,7 +107,10 @@ export class AgentLabsProject
       if (message.member.isAnonymous) {
         if (!usersOnboarded.has(message.memberId)) {
           usersOnboarded.add(message.memberId);
-          const onboarding = await this.getOnboarding(message.memberId);
+          const onboarding = await this.getOnboarding(
+            message.memberId,
+            message.conversationId,
+          );
 
           await this.agent.send(
             {
@@ -130,11 +129,12 @@ export class AgentLabsProject
       }
       if (!usersOnboarded.has(message.memberId)) {
         usersOnboarded.add(message.memberId);
-        await this.getOnboarding(message.memberId);
+        await this.getOnboarding(message.memberId, message.conversationId);
       }
       const result = await this.runPlugin({
         text: message.text,
         userId: message.memberId,
+        conversationId: message.conversationId,
       });
       this.agent.send(
         {
@@ -186,7 +186,23 @@ export class AgentLabsProject
     ];
   }
 
-  private async runPlugin({ text, userId }: { text: string; userId: string }) {
+  private async runPlugin({
+    text,
+    userId,
+    conversationId,
+  }: {
+    text: string;
+    userId: string;
+    conversationId: string;
+  }) {
+    this.memory = new BufferMemory({
+      chatHistory: new RedisChatMessageHistory({
+        sessionId: `${userId}-${conversationId}`,
+        url: this.configService.get('REDIS_URL'),
+      }),
+      memoryKey: 'chat_history',
+      returnMessages: true,
+    });
     const agent = await initializeAgentExecutorWithOptions(
       this.getTools(userId),
       this.chatOpenAI,
